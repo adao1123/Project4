@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="YELP_CONSUMER_KEY">EilC2USvz-YObU6vfeJRHw</string>
+    <string name="YELP_CONSUMER_SECRET">0fxSeohRSU4zyZXayEIS2v66k-U</string>
+    <string name="YELP_TOKEN_KEY">dyHwTkydjLinN0jLBPKmNVqvmbEoj86r</string>
+    <string name="YELP_TOKEN_SECRET">hmh69RYVAWjeAKT9M1xWVBd5F6Y</string>
+</resources>

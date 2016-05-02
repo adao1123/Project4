@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,19 +14,32 @@ import android.widget.TextView;
 import com.example.ratemyboba.R;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.OnSwipeTouchListener;
+import com.yelp.clientlib.connection.YelpAPI;
+import com.yelp.clientlib.connection.YelpAPIFactory;
+import com.yelp.clientlib.entities.Business;
+import com.yelp.clientlib.entities.SearchResponse;
 
 import org.w3c.dom.Text;
 
 import java.awt.font.TextAttribute;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by adao1 on 5/2/2016.
  */
 public class BobaFragment extends Fragment {
+    private static final String TAG = "BOBA FRAGMENT";
     private Tea tea;
     private TextView titleTV;
     private LinearLayout bobaLayout;
     private OnBobaSwipeRightListener swipeRightListener;
+    private ArrayList<Business> teaShopList;
 
     @Nullable
     @Override
@@ -41,6 +55,7 @@ public class BobaFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         String bobaTitle = getArguments().getString("KEY");
         titleTV.setText(bobaTitle);
+        setYelpApi();
         setOnSwipeListener();
 
     }
@@ -62,5 +77,33 @@ public class BobaFragment extends Fragment {
 
     public interface OnBobaSwipeRightListener{
         void onBobaSwipeRight();
+    }
+
+
+    private void setYelpApi(){
+        Log.i(TAG, "setYelpApi: inside");
+        YelpAPIFactory yelpAPIFactory = new YelpAPIFactory(
+                getString(R.string.YELP_CONSUMER_KEY), getString(R.string.YELP_CONSUMER_SECRET),
+                getString(R.string.YELP_TOKEN_KEY),getString(R.string.YELP_TOKEN_SECRET));
+        YelpAPI yelpAPI = yelpAPIFactory.createAPI();
+        Map<String, String> params = new HashMap<>();
+        //params.put("category_filter","Bubble Tea");
+        params.put("term","Boba");
+        Call<SearchResponse> call = yelpAPI.search("San Francisco",params);
+        call.enqueue(new Callback<SearchResponse>() {
+            @Override
+            public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
+                teaShopList = response.body().businesses();
+                for (Business teaShop : teaShopList){
+                    Log.i(TAG, "onResponse: " + teaShop.id());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<SearchResponse> call, Throwable t) {
+                Log.i(TAG, "onFailure: "+t.getMessage());
+                t.printStackTrace();
+            }
+        });
     }
 }

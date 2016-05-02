@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +14,30 @@ import android.view.ViewGroup;
 import com.example.ratemyboba.R;
 import com.example.ratemyboba.TeaAdapter;
 import com.example.ratemyboba.models.Tea;
+import com.example.ratemyboba.models.TeaShopList;
 import com.example.ratemyboba.util.RV_Divider_Decoration;
 import com.example.ratemyboba.util.RV_Space_Decoration;
+import com.yelp.clientlib.connection.YelpAPI;
+import com.yelp.clientlib.connection.YelpAPIFactory;
+import com.yelp.clientlib.entities.Business;
+import com.yelp.clientlib.entities.SearchResponse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by adao1 on 5/1/2016.
  */
 public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener{
+
+    private static final String TAG = "HOME FRAGMENT";
     RecyclerView teaRV;
     List<Tea> teaList;
     PassClickedTeaListener listener;
