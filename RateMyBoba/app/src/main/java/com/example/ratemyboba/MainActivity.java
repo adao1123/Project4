@@ -9,7 +9,7 @@ import com.example.ratemyboba.fragments.BobaFragment;
 import com.example.ratemyboba.fragments.HomeFragment;
 import com.example.ratemyboba.models.Tea;
 
-public class MainActivity extends AppCompatActivity implements HomeFragment.PassClickedTeaListener{
+public class MainActivity extends AppCompatActivity implements HomeFragment.PassClickedTeaListener, BobaFragment.OnBobaSwipeRightListener{
 
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Pass
         fragmentManager = getSupportFragmentManager();
         fragmentTransaction = fragmentManager.beginTransaction();
         HomeFragment homeFragment = new HomeFragment();
-        fragmentTransaction.add(R.id.fragment_contatinerID,homeFragment);
+        fragmentTransaction.add(R.id.fragment_contatinerID, homeFragment);
         fragmentTransaction.commit();
     }
 
@@ -36,8 +36,16 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Pass
         Bundle bundle = new Bundle();
         bundle.putString("KEY",tea.getTitle());
         bobaFragment.setArguments(bundle);
-        fragmentTransaction.replace(R.id.fragment_contatinerID,bobaFragment);
+        fragmentTransaction.replace(R.id.fragment_contatinerID, bobaFragment);
         fragmentTransaction.commit();
 
+    }
+
+    @Override
+    public void onBobaSwipeRight() {
+        fragmentTransaction = fragmentManager.beginTransaction();
+        HomeFragment homeFragment = new HomeFragment();
+        fragmentTransaction.replace(R.id.fragment_contatinerID, homeFragment);
+        fragmentTransaction.commit();
     }
 }
