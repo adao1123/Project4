@@ -21,7 +21,7 @@ import java.util.List;
  * Created by adao1 on 5/2/2016.
  */
 public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHolder> {
-
+    
     private List<Business> mTeaShops;
     private final OnTeaShopClickListener listener;
     private Context context;
