@@ -7,9 +7,10 @@ import android.os.Bundle;
 
 import com.example.ratemyboba.fragments.BobaFragment;
 import com.example.ratemyboba.fragments.HomeFragment;
+import com.example.ratemyboba.fragments.SearchFragment;
 import com.example.ratemyboba.models.Tea;
 
-public class MainActivity extends AppCompatActivity implements HomeFragment.PassClickedTeaListener, BobaFragment.OnBobaSwipeRightListener{
+public class MainActivity extends AppCompatActivity implements HomeFragment.PassClickedTeaListener, BobaFragment.OnBobaSwipeRightListener, HomeFragment.OnHomeFabClickListener{
 
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
@@ -46,6 +47,14 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.Pass
         fragmentTransaction = fragmentManager.beginTransaction();
         HomeFragment homeFragment = new HomeFragment();
         fragmentTransaction.replace(R.id.fragment_contatinerID, homeFragment);
+        fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onHomeFabClick() {
+        fragmentTransaction = fragmentManager.beginTransaction();
+        SearchFragment searchFragment = new SearchFragment();
+        fragmentTransaction.replace(R.id.fragment_contatinerID, searchFragment);
         fragmentTransaction.commit();
     }
 }

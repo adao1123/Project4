@@ -6,31 +6,18 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.ratemyboba.R;
-import com.example.ratemyboba.TeaAdapter;
+import com.example.ratemyboba.adapters.TeaAdapter;
 import com.example.ratemyboba.models.Tea;
-import com.example.ratemyboba.models.TeaShopList;
-import com.example.ratemyboba.util.RV_Divider_Decoration;
 import com.example.ratemyboba.util.RV_Space_Decoration;
-import com.yelp.clientlib.connection.YelpAPI;
-import com.yelp.clientlib.connection.YelpAPIFactory;
-import com.yelp.clientlib.entities.Business;
-import com.yelp.clientlib.entities.SearchResponse;
+import com.github.clans.fab.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 /**
  * Created by adao1 on 5/1/2016.
@@ -40,13 +27,16 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     private static final String TAG = "HOME FRAGMENT";
     RecyclerView teaRV;
     List<Tea> teaList;
-    PassClickedTeaListener listener;
+    PassClickedTeaListener teaListener;
+    OnHomeFabClickListener fabListener;
+    FloatingActionButton fab;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home,container,false);
         teaRV = (RecyclerView)view.findViewById(R.id.home_RV_id);
+        fab = (FloatingActionButton)view.findViewById(R.id.home_fab_id);
         return view;
     }
 
@@ -56,6 +46,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaList = new ArrayList<>();
         fillList(); //TEMP/PLACEHOLDER
         setRV();
+        setFabListener();
     }
 
     private void setRV(){
@@ -67,10 +58,23 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaRV.addItemDecoration(decoration);
     }
 
+    private void setFabListener(){
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fabListener.onHomeFabClick();
+            }
+        });
+    }
+
     private void fillList(){
         for (int i = 1; i <= 25; i++){
             teaList.add(new Tea("Boba " + i));
         }
+    }
+
+    public interface OnHomeFabClickListener{
+        void onHomeFabClick();
     }
 
     public interface PassClickedTeaListener{
@@ -80,11 +84,12 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        listener = (PassClickedTeaListener)getActivity();
+        teaListener = (PassClickedTeaListener)getActivity();
+        fabListener = (OnHomeFabClickListener)getActivity();
     }
 
     @Override
     public void onTeaClick(Tea tea) {
-        listener.passClickedTea(tea);
+        teaListener.passClickedTea(tea);
     }
 }

@@ -95,7 +95,7 @@ public class BobaFragment extends Fragment {
             public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
                 teaShopList = response.body().businesses();
                 for (Business teaShop : teaShopList){
-                    Log.i(TAG, "onResponse: " + teaShop.id());
+                    Log.i(TAG, "onResponse: " + teaShop.name());
                 }
             }
 

@@ -37,5 +37,7 @@ dependencies {
     compile 'com.yelp.clientlib:yelp-android:2.0.0'
     compile 'com.squareup.retrofit2:retrofit:2.0.1'
     compile 'com.squareup.retrofit2:converter-gson:2.0.1'
+    compile 'com.github.clans:fab:1.6.3'
+    compile 'com.squareup.picasso:picasso:2.3.3'
 
 }
