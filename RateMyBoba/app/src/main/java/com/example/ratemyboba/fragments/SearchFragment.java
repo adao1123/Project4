@@ -50,7 +50,7 @@ public class SearchFragment extends Fragment implements TeaShopAdapter.OnTeaShop
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setRV();
+        //setRV();
         setYelpApi();
     }
 
@@ -71,7 +71,9 @@ public class SearchFragment extends Fragment implements TeaShopAdapter.OnTeaShop
                 for (Business teaShop : teaShopList) {
                     Log.i(TAG, "onResponse: " + teaShop.name());
                 }
-                teaShopAdapter.notifyDataSetChanged();
+                //teaShopAdapter.notifyDataSetChanged();
+                setRV();
+                //teaShopAdapter.notifyItemRangeInserted(0,teaShopList.size()-1);
             }
 
             @Override
@@ -83,7 +85,7 @@ public class SearchFragment extends Fragment implements TeaShopAdapter.OnTeaShop
     }
 
     private void setRV(){
-        teaShopList = new ArrayList<>();
+        //teaShopList = new ArrayList<>();
         teaShopAdapter = new TeaShopAdapter(teaShopList,this);
         teaRV.setAdapter(teaShopAdapter);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);

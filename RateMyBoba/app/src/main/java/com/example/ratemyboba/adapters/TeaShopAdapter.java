@@ -2,6 +2,7 @@ package com.example.ratemyboba.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,8 @@ import java.util.List;
  * Created by adao1 on 5/2/2016.
  */
 public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHolder> {
-    
+
+    private static final String TAG = "TEA SHOP ADAPTER";
     private List<Business> mTeaShops;
     private final OnTeaShopClickListener listener;
     private Context context;
@@ -39,6 +41,7 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         context = parent.getContext();
+        Log.i(TAG, "onCreateViewHolder: ");
         LayoutInflater inflater = LayoutInflater.from(context);
         View teaView = inflater.inflate(R.layout.rv_item, parent, false);
         ViewHolder viewHolder = new ViewHolder(teaView);
@@ -51,8 +54,12 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
         TextView titleTV = holder.titleTV;
         ImageView teaIV = holder.teaIV;
         titleTV.setText(teaShop.name());
+        Log.i(TAG, "onBindViewHolder: "+teaShop.imageUrl());
+
         Picasso.with(context)
-                .load(teaShop.imageUrl())
+                .load(teaShop.imageUrl().replaceAll("ms", "348s"))
+                //.resizeDimen(200,200)
+                .resize(200, 200)
                 .into(teaIV);
         holder.bind(mTeaShops.get(position),listener);
     }
