@@ -1,38 +1,65 @@
 package com.example.ratemyboba.fragments;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.ratemyboba.R;
 import com.example.ratemyboba.adapters.TeaAdapter;
+import com.example.ratemyboba.adapters.TeaShopAdapter;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.RV_Space_Decoration;
 import com.github.clans.fab.FloatingActionButton;
+import com.yelp.clientlib.connection.YelpAPI;
+import com.yelp.clientlib.connection.YelpAPIFactory;
+import com.yelp.clientlib.entities.Business;
+import com.yelp.clientlib.entities.SearchResponse;
+import com.yelp.clientlib.entities.options.CoordinateOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by adao1 on 5/1/2016.
  */
-public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener{
+public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener, TeaShopAdapter.OnTeaShopClickListener{
 
     private static final String TAG = "HOME FRAGMENT";
-    RecyclerView teaRV;
     List<Tea> teaList;
     PassClickedTeaListener teaListener;
-    OnHomeFabClickListener fabListener;
+    OnDistanceFabClickListener distanceFabListener;
+    OnRatingFabClickListener ratingFabClickListener;
+    OnDealFabClickListener dealFabClickListener;
     FloatingActionButton bobaFab;
     FloatingActionButton distanceFab;
     FloatingActionButton ratingsFab;
     FloatingActionButton dealsFab;
+    private ArrayList<Business> teaShopList;
+    private RecyclerView teaRV;
+    private TeaShopAdapter teaShopAdapter;
+    private double latitude;
+    private double longitude;
+    private LocationManager locationManager;
 
     @Nullable
     @Override
@@ -50,8 +77,12 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         teaList = new ArrayList<>();
+        teaShopList = new ArrayList<>();
         fillList(); //TEMP/PLACEHOLDER
-        setRV();
+        locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+        getLocation();
+//        setRV();
+        setTeaShopRV();
         setFabListener();
     }
 
@@ -63,15 +94,107 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         RV_Space_Decoration decoration = new RV_Space_Decoration(16);
         teaRV.addItemDecoration(decoration);
     }
+    private void setTeaShopRV(){
+        teaShopAdapter = new TeaShopAdapter(teaShopList,this);
+        teaRV.setAdapter(teaShopAdapter);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
+        teaRV.setLayoutManager(gridLayoutManager);
+        RV_Space_Decoration decoration = new RV_Space_Decoration(16);
+        teaRV.addItemDecoration(decoration);
+    }
 
     private void setFabListener(){
         bobaFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                fabListener.onHomeFabClick();
+                distanceFabListener.onDistanceFabClick();
+            }
+        });
+        distanceFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               // distanceFabListener.onDistanceFabClick();
+                setYelpApi('d');
+            }
+        });
+        ratingsFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setYelpApi('r');
+                //distanceFabListener.onDistanceFabClick();
+            }
+        });
+        dealsFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setYelpApi('$');
+                //distanceFabListener.onDistanceFabClick();
             }
         });
     }
+
+
+    private void setYelpApi(char c){
+        Log.i(TAG, "setYelpApi: inside");
+        YelpAPIFactory yelpAPIFactory = new YelpAPIFactory(
+                getString(R.string.YELP_CONSUMER_KEY), getString(R.string.YELP_CONSUMER_SECRET),
+                getString(R.string.YELP_TOKEN_KEY),getString(R.string.YELP_TOKEN_SECRET));
+        YelpAPI yelpAPI = yelpAPIFactory.createAPI();
+        Map<String, String> params = new HashMap<>();
+        params.put("category_filter","bubbletea");
+//        params.put("term", "Boba");
+        params.put("limit","20");
+        if (c == 'r') params.put("sort","2");
+        else params.put("sort","1");
+        if (c == '$') params.put("deals_filter","true");
+        CoordinateOptions coordinate = CoordinateOptions.builder()
+                .latitude(latitude)
+                .longitude(longitude).build();
+        Call<SearchResponse> call = yelpAPI.search(coordinate,params);
+        call.enqueue(new Callback<SearchResponse>() {
+            @Override
+            public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
+                ArrayList<Business> responseList = response.body().businesses();
+                teaShopList.clear();
+                teaShopList.addAll(responseList);
+                Log.d(TAG, "onResponse: Lat & Long" + latitude + longitude);
+                for (Business teaShop : teaShopList) {
+                    Log.i(TAG, "onResponse: " + teaShop.name());
+//                    Log.i(TAG, "onResponse: " + teaShop.deals().get(0).title());
+                }
+                teaShopAdapter.notifyDataSetChanged();
+                //setTeaShopRV();
+                //teaShopAdapter.notifyItemRangeInserted(0,teaShopList.size()-1);
+            }
+
+            @Override
+            public void onFailure(Call<SearchResponse> call, Throwable t) {
+                Log.i(TAG, "onFailure: " + t.getMessage());
+                t.printStackTrace();
+            }
+        });
+    }
+
+    public void setLocation(double[] location){
+        this.latitude = location[0];
+        this.longitude = location[1];
+    }
+
+    private double[] getLocation(){
+        if ( ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        }
+        String locationProvider = LocationManager.NETWORK_PROVIDER;
+        Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+        Log.i(TAG, "getLocation: Lat: " + lastKnownLocation.getLatitude());
+        Log.i(TAG, "getLocation: Long: " + lastKnownLocation.getLongitude());
+        latitude = lastKnownLocation.getLatitude();
+        longitude = lastKnownLocation.getLongitude();
+        double[] location = {lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude()};
+        return location;
+    }
+
+
 
     private void fillList(){
         for (int i = 1; i <= 25; i++){
@@ -79,8 +202,14 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         }
     }
 
-    public interface OnHomeFabClickListener{
-        void onHomeFabClick();
+    public interface OnDistanceFabClickListener {
+        void onDistanceFabClick();
+    }
+    public interface OnRatingFabClickListener {
+        void onRatingFabClick();
+    }
+    public interface OnDealFabClickListener {
+        void onDealFabClick();
     }
 
     public interface PassClickedTeaListener{
@@ -91,11 +220,17 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     public void onAttach(Context context) {
         super.onAttach(context);
         teaListener = (PassClickedTeaListener)getActivity();
-        fabListener = (OnHomeFabClickListener)getActivity();
+        distanceFabListener = (OnDistanceFabClickListener)getActivity();
     }
 
     @Override
     public void onTeaClick(Tea tea) {
         teaListener.passClickedTea(tea);
     }
+
+    @Override
+    public void onTeaShopClick(Business teaShop) {
+
+    }
+
 }
