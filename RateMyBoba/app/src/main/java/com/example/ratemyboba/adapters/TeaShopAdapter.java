@@ -16,6 +16,8 @@ import com.example.ratemyboba.models.TeaShopList;
 import com.squareup.picasso.Picasso;
 import com.yelp.clientlib.entities.Business;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 /**
@@ -52,16 +54,19 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
     public void onBindViewHolder(ViewHolder holder, int position) {
         Business teaShop = mTeaShops.get(position);
         TextView titleTV = holder.titleTV;
+        TextView addressTV = holder.addressTV;
         ImageView teaIV = holder.teaIV;
+        ImageView ratingIV = holder.ratingIV;
         titleTV.setText(teaShop.name());
-        Log.i(TAG, "onBindViewHolder: "+teaShop.imageUrl());
-
+        addressTV.setText(teaShop.location().displayAddress().toString());
         Picasso.with(context)
                 .load(teaShop.imageUrl().replaceAll("ms", "348s"))
-                //.resizeDimen(200,200)
-                .resize(200, 200)
                 .into(teaIV);
-        holder.bind(mTeaShops.get(position),listener);
+        Picasso.with(context)
+                .load(teaShop.ratingImgUrlLarge())
+                .into(ratingIV);
+        holder.bind(mTeaShops.get(position), listener);
+
     }
 
     @Override
@@ -71,11 +76,15 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         public TextView titleTV;
+        public TextView addressTV;
+        public ImageView ratingIV;
         public ImageView teaIV;
         public ViewHolder(View itemView) {
             super(itemView);
             titleTV = (TextView)itemView.findViewById(R.id.rv_title_id);
+            addressTV = (TextView)itemView.findViewById(R.id.rv_address_id);
             teaIV = (ImageView)itemView.findViewById(R.id.rv_image_id);
+            ratingIV = (ImageView)itemView.findViewById(R.id.rv_rating_id);
         }
         public void bind(final Business teaShop, final OnTeaShopClickListener listener){
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -86,4 +95,5 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
             });
         }
     }
+
 }

@@ -29,14 +29,20 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     List<Tea> teaList;
     PassClickedTeaListener teaListener;
     OnHomeFabClickListener fabListener;
-    FloatingActionButton fab;
+    FloatingActionButton bobaFab;
+    FloatingActionButton distanceFab;
+    FloatingActionButton ratingsFab;
+    FloatingActionButton dealsFab;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home,container,false);
         teaRV = (RecyclerView)view.findViewById(R.id.home_RV_id);
-        fab = (FloatingActionButton)view.findViewById(R.id.home_fab_id);
+        bobaFab = (FloatingActionButton)view.findViewById(R.id.home_fab_boba_id);
+        distanceFab = (FloatingActionButton)view.findViewById(R.id.home_fab_distance_id);
+        ratingsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_rating_id);
+        dealsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_deals_id);
         return view;
     }
 
@@ -59,7 +65,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     }
 
     private void setFabListener(){
-        fab.setOnClickListener(new View.OnClickListener() {
+        bobaFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 fabListener.onHomeFabClick();
