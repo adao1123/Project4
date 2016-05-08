@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.ratemyboba.R;
+import com.example.ratemyboba.fragments.HomeFragment;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.models.TeaShop;
 import com.example.ratemyboba.models.TeaShopList;
@@ -29,11 +30,13 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
     private List<Business> mTeaShops;
     private final OnTeaShopClickListener listener;
     private Context context;
+    private double latitude,longitude;
 
-
-    public TeaShopAdapter(List<Business> mTeaShops, OnTeaShopClickListener listener) {
+    public TeaShopAdapter(List<Business> mTeaShops, OnTeaShopClickListener listener, double latitude, double longitude) {
         this.mTeaShops = mTeaShops;
         this.listener = listener;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public interface OnTeaShopClickListener{
@@ -55,6 +58,9 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
         Business teaShop = mTeaShops.get(position);
         TextView titleTV = holder.titleTV;
         TextView addressTV = holder.addressTV;
+        TextView distanceTV = holder.distanceTV;
+        double distance = Math.round(getDistance(latitude,longitude,teaShop.location().coordinate().latitude(),teaShop.location().coordinate().longitude()) * 100.0) / 100.0;
+        distanceTV.setText(distance+"m");
         ImageView teaIV = holder.teaIV;
         ImageView ratingIV = holder.ratingIV;
         titleTV.setText(teaShop.name());
@@ -77,12 +83,14 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
     public static class ViewHolder extends RecyclerView.ViewHolder{
         public TextView titleTV;
         public TextView addressTV;
+        public TextView distanceTV;
         public ImageView ratingIV;
         public ImageView teaIV;
         public ViewHolder(View itemView) {
             super(itemView);
             titleTV = (TextView)itemView.findViewById(R.id.rv_title_id);
             addressTV = (TextView)itemView.findViewById(R.id.rv_address_id);
+            distanceTV = (TextView)itemView.findViewById(R.id.rv_distance_id);
             teaIV = (ImageView)itemView.findViewById(R.id.rv_image_id);
             ratingIV = (ImageView)itemView.findViewById(R.id.rv_rating_id);
         }
@@ -94,6 +102,21 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
                 }
             });
         }
+    }
+
+
+    public static double getDistance(double lat1, double lon1, double lat2, double lon2){ //returns distance from two latlon pairs
+        int R = 6378100; //radius of the EARTH in meters
+        float latDistance = toRad(lat2-lat1);
+        float lonDistance = toRad(lon2 - lon1);
+        float a = (float) (Math.sin(latDistance / 2) * Math.sin(latDistance / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                        Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2));
+        float c = (float) (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+        return R * c/1609.34;//return miles
+    }
+    private static float toRad(double value) {
+        return (float) (value * Math.PI / 180); //made this as a float alternative to Math.toRadians
     }
 
 }

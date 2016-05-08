@@ -102,7 +102,7 @@ public class SearchFragment extends Fragment implements TeaShopAdapter.OnTeaShop
 
     private void setRV(){
         //teaShopList = new ArrayList<>();
-        teaShopAdapter = new TeaShopAdapter(teaShopList,this);
+        teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
         teaRV.setAdapter(teaShopAdapter);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
         teaRV.setLayoutManager(gridLayoutManager);

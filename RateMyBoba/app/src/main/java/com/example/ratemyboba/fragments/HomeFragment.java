@@ -2,9 +2,9 @@ package com.example.ratemyboba.fragments;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.ratemyboba.R;
+import com.example.ratemyboba.activities.ShopActivity;
 import com.example.ratemyboba.adapters.TeaAdapter;
 import com.example.ratemyboba.adapters.TeaShopAdapter;
 import com.example.ratemyboba.models.Tea;
@@ -44,12 +45,11 @@ import retrofit2.Response;
  */
 public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener, TeaShopAdapter.OnTeaShopClickListener{
 
+    public static final String DETAIL_KEY = "DETAILKEY";
     private static final String TAG = "HOME FRAGMENT";
     List<Tea> teaList;
     PassClickedTeaListener teaListener;
-    OnDistanceFabClickListener distanceFabListener;
-    OnRatingFabClickListener ratingFabClickListener;
-    OnDealFabClickListener dealFabClickListener;
+    OnBobaFabClickListener bobaFabListener;
     FloatingActionButton bobaFab;
     FloatingActionButton distanceFab;
     FloatingActionButton ratingsFab;
@@ -95,11 +95,11 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaRV.addItemDecoration(decoration);
     }
     private void setTeaShopRV(){
-        teaShopAdapter = new TeaShopAdapter(teaShopList,this);
+        teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
         teaRV.setAdapter(teaShopAdapter);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
         teaRV.setLayoutManager(gridLayoutManager);
-        RV_Space_Decoration decoration = new RV_Space_Decoration(16);
+        RV_Space_Decoration decoration = new RV_Space_Decoration(14);
         teaRV.addItemDecoration(decoration);
     }
 
@@ -107,13 +107,12 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         bobaFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                distanceFabListener.onDistanceFabClick();
+                bobaFabListener.onDistanceFabClick();
             }
         });
         distanceFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // distanceFabListener.onDistanceFabClick();
                 setYelpApi('d');
             }
         });
@@ -121,14 +120,12 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             @Override
             public void onClick(View v) {
                 setYelpApi('r');
-                //distanceFabListener.onDistanceFabClick();
             }
         });
         dealsFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 setYelpApi('$');
-                //distanceFabListener.onDistanceFabClick();
             }
         });
     }
@@ -202,14 +199,8 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         }
     }
 
-    public interface OnDistanceFabClickListener {
+    public interface OnBobaFabClickListener {
         void onDistanceFabClick();
-    }
-    public interface OnRatingFabClickListener {
-        void onRatingFabClick();
-    }
-    public interface OnDealFabClickListener {
-        void onDealFabClick();
     }
 
     public interface PassClickedTeaListener{
@@ -220,7 +211,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     public void onAttach(Context context) {
         super.onAttach(context);
         teaListener = (PassClickedTeaListener)getActivity();
-        distanceFabListener = (OnDistanceFabClickListener)getActivity();
+        bobaFabListener = (OnBobaFabClickListener)getActivity();
     }
 
     @Override
@@ -230,7 +221,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 
     @Override
     public void onTeaShopClick(Business teaShop) {
-
+        Intent detailIntent = new Intent(getActivity(), ShopActivity.class);
+        detailIntent.putExtra(DETAIL_KEY, teaShop.id());
+        startActivity(detailIntent);
     }
 
 }

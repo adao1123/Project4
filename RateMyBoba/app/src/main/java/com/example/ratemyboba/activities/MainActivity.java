@@ -18,16 +18,13 @@ import android.widget.Toast;
 import com.example.ratemyboba.R;
 import com.example.ratemyboba.fragments.BobaFragment;
 import com.example.ratemyboba.fragments.HomeFragment;
-import com.example.ratemyboba.fragments.SearchFragment;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.UserLocationListener;
 
 public class MainActivity extends AppCompatActivity implements
         HomeFragment.PassClickedTeaListener,
         BobaFragment.OnBobaSwipeRightListener,
-        HomeFragment.OnDistanceFabClickListener,
-        HomeFragment.OnRatingFabClickListener,
-        HomeFragment.OnDealFabClickListener{
+        HomeFragment.OnBobaFabClickListener{
 
     private static final String TAG = "MAIN ACTIVITY";
     FragmentManager fragmentManager;
@@ -77,18 +74,6 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onDistanceFabClick() {
-        checkLocationOn();
-        homeFragment.setLocation(getLocation());
-    }
-
-    @Override
-    public void onDealFabClick() {
-        checkLocationOn();
-        homeFragment.setLocation(getLocation());
-    }
-
-    @Override
-    public void onRatingFabClick() {
         checkLocationOn();
         homeFragment.setLocation(getLocation());
     }
