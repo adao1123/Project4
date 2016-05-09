@@ -18,8 +18,14 @@ import com.example.ratemyboba.R;
 import com.example.ratemyboba.adapters.TeaAdapter;
 import com.example.ratemyboba.adapters.TeaShopAdapter;
 import com.example.ratemyboba.fragments.HomeFragment;
+import com.example.ratemyboba.models.Review;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.RV_Space_Decoration;
+import com.firebase.client.AuthData;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.squareup.picasso.Picasso;
 import com.yelp.clientlib.connection.YelpAPI;
 import com.yelp.clientlib.connection.YelpAPIFactory;
@@ -40,11 +46,18 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     private TextView openTV;
     private TextView phoneTV;
     private TextView dealsTV;
+    private TextView reviewsTV;
     private ImageView ratingIV;
     private ImageView shopIV;
     private String teaID;
+    private String userName;
     private RecyclerView bobaRV;
     private ArrayList<Tea> teaList;
+    private Firebase firebaseRef;
+
+    private Firebase firebaseShops;
+    private Firebase firebaseChildShop;
+    private Firebase firebaseReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +81,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             public void onResponse(Call<Business> call, Response<Business> response) {
                 teaShop = response.body();
                 displayViews();
+                initFirebase();
             }
 
             @Override
@@ -81,6 +95,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         phoneTV = (TextView)findViewById(R.id.shop_phone_id);
         openTV = (TextView)findViewById(R.id.shop_url_id);
         dealsTV = (TextView)findViewById(R.id.shop_deals_id);
+        reviewsTV = (TextView)findViewById(R.id.shop_reviews_id);
         ratingIV = (ImageView)findViewById(R.id.shop_rating_id);
         shopIV = (ImageView)findViewById(R.id.shop_image_id);
         bobaRV = (RecyclerView)findViewById(R.id.shop_bobaRV_id);
@@ -98,6 +113,19 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             openTV.setText("Open");
             openTV.setTextColor(Color.GREEN);
         }
+//        if (teaShop.reviews()!=null){
+//            firebaseReviews.addValueEventListener(new ValueEventListener() {
+//                @Override
+//                public void onDataChange(DataSnapshot dataSnapshot) {
+//                    reviewsTV.setText(dataSnapshot.getValue(String.class));
+//                }
+//
+//                @Override
+//                public void onCancelled(FirebaseError firebaseError) {
+//
+//                }
+//            });
+//        }
         Picasso.with(this)
                 .load(teaShop.ratingImgUrlLarge())
                 .into(ratingIV);
@@ -137,6 +165,36 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         for (int i = 0; i<25; i++){
             teaList.add(new Tea("Boba Tea " + i));
         }
+    }
+
+    private void initFirebase(){
+        firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
+        AuthData authData = firebaseRef.getAuth();
+        String userID = authData.getUid();
+        firebaseShops = firebaseRef.child("Shops");
+        firebaseChildShop = firebaseShops.child(teaShop.id());
+        firebaseChildShop.child("name").setValue(teaShop.name());
+        firebaseChildShop.child("rating").setValue(teaShop.rating());
+        firebaseReviews = firebaseChildShop.child("review");
+        firebaseReviews.setValue(teaShop.reviews().get(0).ratingImageLargeUrl());
+        Log.i(TAG, "initFirebase: Rating image " + teaShop.ratingImgUrlLarge());
+        Log.i(TAG, "initFirebase: USER-ID" + userID);
+        firebaseRef.child("users").child(userID).child("displayName").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                userName = dataSnapshot.getValue(String.class);
+                Log.i(TAG, "onDataChange: " + userName);
+                Review review = new Review(userName,"getReview from Edit Text","4.5");
+                firebaseReviews.push().setValue(review);
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+        Log.i(TAG, "initFirebase: " + userName);
+        // Review review = new Review()
     }
 
     @Override
