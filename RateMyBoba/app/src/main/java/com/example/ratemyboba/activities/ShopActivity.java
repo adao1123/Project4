@@ -10,13 +10,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.ratemyboba.R;
 import com.example.ratemyboba.adapters.TeaAdapter;
-import com.example.ratemyboba.adapters.TeaShopAdapter;
 import com.example.ratemyboba.fragments.HomeFragment;
 import com.example.ratemyboba.models.Review;
 import com.example.ratemyboba.models.Tea;
@@ -26,6 +27,8 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.firebase.ui.FirebaseRecyclerAdapter;
+import com.francescocervone.openratingview.RatingView;
 import com.squareup.picasso.Picasso;
 import com.yelp.clientlib.connection.YelpAPI;
 import com.yelp.clientlib.connection.YelpAPIFactory;
@@ -46,7 +49,11 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     private TextView openTV;
     private TextView phoneTV;
     private TextView dealsTV;
-    private TextView reviewsTV;
+    private RecyclerView reviewsRV;
+    private EditText reviewRatingET;
+    private EditText reviewBodyET;
+    private Button submitButton;
+    private RatingView ratingView;
     private ImageView ratingIV;
     private ImageView shopIV;
     private String teaID;
@@ -58,6 +65,9 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     private Firebase firebaseShops;
     private Firebase firebaseChildShop;
     private Firebase firebaseReviews;
+    private AuthData authData;
+    private int rating =0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +80,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         handleYelpAPI();
         setPhoneIntent();
         setBobaRV();
+        submitReviewListener();
     }
 
     private void handleYelpAPI(){
@@ -95,10 +106,14 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         phoneTV = (TextView)findViewById(R.id.shop_phone_id);
         openTV = (TextView)findViewById(R.id.shop_url_id);
         dealsTV = (TextView)findViewById(R.id.shop_deals_id);
-        reviewsTV = (TextView)findViewById(R.id.shop_reviews_id);
+        reviewsRV = (RecyclerView)findViewById(R.id.shop_reviews_id);
         ratingIV = (ImageView)findViewById(R.id.shop_rating_id);
         shopIV = (ImageView)findViewById(R.id.shop_image_id);
         bobaRV = (RecyclerView)findViewById(R.id.shop_bobaRV_id);
+        reviewBodyET = (EditText)findViewById(R.id.shop_review_body_id);
+        reviewRatingET = (EditText)findViewById(R.id.shop_review_rating_id);
+        submitButton = (Button)findViewById(R.id.shop_review_submit_id);
+        ratingView = (RatingView)findViewById(R.id.shop_review_star_id);
     }
     private void displayViews(){
         titleTV.setText(teaShop.name());
@@ -117,7 +132,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
 //            firebaseReviews.addValueEventListener(new ValueEventListener() {
 //                @Override
 //                public void onDataChange(DataSnapshot dataSnapshot) {
-//                    reviewsTV.setText(dataSnapshot.getValue(String.class));
+//                    reviewsRV.setText(dataSnapshot.getValue(String.class));
 //                }
 //
 //                @Override
@@ -169,23 +184,23 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
 
     private void initFirebase(){
         firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
-        AuthData authData = firebaseRef.getAuth();
+        authData = firebaseRef.getAuth();
         String userID = authData.getUid();
+        userName = (String) authData.getProviderData().get("displayName");
+        Log.i(TAG, "initFirebase: PRINT NAME " + userName);
         firebaseShops = firebaseRef.child("Shops");
         firebaseChildShop = firebaseShops.child(teaShop.id());
         firebaseChildShop.child("name").setValue(teaShop.name());
         firebaseChildShop.child("rating").setValue(teaShop.rating());
-        firebaseReviews = firebaseChildShop.child("review");
-        firebaseReviews.setValue(teaShop.reviews().get(0).ratingImageLargeUrl());
+        //firebaseReviews.setValue(teaShop.reviews().get(0).ratingImageLargeUrl());
         Log.i(TAG, "initFirebase: Rating image " + teaShop.ratingImgUrlLarge());
-        Log.i(TAG, "initFirebase: USER-ID" + userID);
-        firebaseRef.child("users").child(userID).child("displayName").addListenerForSingleValueEvent(new ValueEventListener() {
+        firebaseReviews = firebaseChildShop.child("review");
+        firebaseReviews.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                userName = dataSnapshot.getValue(String.class);
-                Log.i(TAG, "onDataChange: " + userName);
-                Review review = new Review(userName,"getReview from Edit Text","4.5");
-                firebaseReviews.push().setValue(review);
+                Review review = new Review(teaShop.reviews().get(0).user().name(),teaShop.reviews().get(0).excerpt(),teaShop.reviews().get(0).rating()+"");
+                if (!dataSnapshot.hasChildren()) firebaseReviews.push().setValue(review);
+                Log.i(TAG, "onDataChange: inside ");
             }
 
             @Override
@@ -193,12 +208,69 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
 
             }
         });
-        Log.i(TAG, "initFirebase: " + userName);
-        // Review review = new Review()
+        setReviewRV();
+
+    }
+
+    private void submitReviewListener(){
+        ratingView.setOnStarClickListener(new RatingView.OnStarClickListener() {
+            @Override
+            public void onClick(int i) {
+                rating = i;
+            }
+        });
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (rating==0){
+                    Toast.makeText(ShopActivity.this,"Click on Stars to Rate",Toast.LENGTH_LONG).show();
+                    return;
+                }
+                Review review = new Review(userName,reviewBodyET.getText().toString(),rating+"");
+                firebaseReviews.push().setValue(review);
+                reviewBodyET.getText().clear();
+                reviewRatingET.getText().clear();
+            }
+        });
     }
 
     @Override
     public void onTeaClick(Tea tea) {
 
     }
+
+    private void setReviewRV(){
+//        RecyclerView recycler = (RecyclerView) findViewById(R.id.shop_reviews_id);
+//        recycler.setHasFixedSize(true);
+//        recycler.setLayoutManager(new LinearLayoutManager(this));
+
+        FirebaseRecyclerAdapter mAdapter = new FirebaseRecyclerAdapter<Review, ReviewsViewHolder>(Review.class, R.layout.rv_review_item, ReviewsViewHolder.class, firebaseReviews) {
+            @Override
+            protected void populateViewHolder(ReviewsViewHolder reviewsViewHolder, Review review, int i) {
+                reviewsViewHolder.reviewUserTV.setText(review.getUser());
+                reviewsViewHolder.reviewBodyTV.setText(review.getText());
+                reviewsViewHolder.reviewRatingTV.setText(review.getRating());
+            }
+        };
+        reviewsRV.setAdapter(mAdapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        reviewsRV.setLayoutManager(linearLayoutManager);
+        RV_Space_Decoration decoration = new RV_Space_Decoration(14);
+        reviewsRV.addItemDecoration(decoration);
+
+    }
+
+    public static class ReviewsViewHolder extends RecyclerView.ViewHolder {
+        TextView reviewUserTV;
+        TextView reviewBodyTV;
+        TextView reviewRatingTV;
+
+        public ReviewsViewHolder(View itemView) {
+            super(itemView);
+            reviewUserTV = (TextView)itemView.findViewById(R.id.rv_review_user);
+            reviewBodyTV = (TextView) itemView.findViewById(R.id.rv_review_body);
+            reviewRatingTV = (TextView)itemView.findViewById(R.id.rv_review_rating);
+        }
+    }
+
 }

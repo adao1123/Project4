@@ -15,6 +15,9 @@ public class Review {
         this.rating = rating;
     }
 
+    public Review() {
+    }
+
     public String getUser() {
         return user;
     }
