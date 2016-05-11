@@ -5,7 +5,8 @@
 
     <TextView
         android:id="@+id/rv_tea_name"
-        android:layout_gravity="center_horizontal"
+        android:layout_gravity="center"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <ImageView
@@ -20,6 +21,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/ic_thumb_up_24dp"
+            android:layout_weight="1"/>
+        <TextView
+            android:id="@+id/rv_tea_points"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:layout_weight="1"/>
         <Button
             android:id="@+id/rv_tea_minus"

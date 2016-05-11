@@ -8,6 +8,7 @@ public class Tea {
     private String imageUrl;
     private int numUp;
     private int numDown;
+    private int points;
 
 
     public Tea() {
@@ -17,9 +18,20 @@ public class Tea {
         this.title = title;
     }
 
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
     public Tea(String title, String imageUrl) {
         this.title = title;
         this.imageUrl = imageUrl;
+        this.numUp = 0;
+        this.numDown = 0;
+        this.points = this.numUp - this.numDown;
     }
 
     public String getTitle() {
@@ -36,5 +48,13 @@ public class Tea {
 
     public int getNumDown() {
         return numDown;
+    }
+
+    public void setNumUp(int numUp) {
+        this.numUp = numUp;
+    }
+
+    public void setNumDown(int numDown) {
+        this.numDown = numDown;
     }
 }

@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements
         HomeFragment.OnBobaFabClickListener{
 
     private static final String TAG = "MAIN ACTIVITY";
+    private static final int PERMISSION_REQUEST_CODE = 1;
     FragmentManager fragmentManager;
     FragmentTransaction fragmentTransaction;
     LocationManager locationManager = null;
@@ -79,8 +80,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private double[] getLocation(){
-        if ( ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//        if ( ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+//            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+//        }
+
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED){
+            String[] permissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+            requestPermissions(permissions, PERMISSION_REQUEST_CODE);
         }
         String locationProvider = LocationManager.NETWORK_PROVIDER;
         Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
