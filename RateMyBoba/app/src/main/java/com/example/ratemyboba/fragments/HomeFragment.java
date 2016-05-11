@@ -1,11 +1,13 @@
 package com.example.ratemyboba.fragments;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -17,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.ratemyboba.R;
 import com.example.ratemyboba.activities.ShopActivity;
@@ -46,6 +49,7 @@ import retrofit2.Response;
 public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener, TeaShopAdapter.OnTeaShopClickListener{
 
     public static final String DETAIL_KEY = "DETAILKEY";
+    private static final int PERMISSION_REQUEST_CODE = 12;
     private static final String TAG = "HOME FRAGMENT";
     List<Tea> teaList;
     PassClickedTeaListener teaListener;
@@ -80,7 +84,6 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaShopList = new ArrayList<>();
         fillList(); //TEMP/PLACEHOLDER
         locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
-        getLocation();
 //        setRV();
         setTeaShopRV();
         setFabListener();
@@ -94,6 +97,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         RV_Space_Decoration decoration = new RV_Space_Decoration(16);
         teaRV.addItemDecoration(decoration);
     }
+
     private void setTeaShopRV(){
         teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
         teaRV.setAdapter(teaShopAdapter);
@@ -113,23 +117,25 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         distanceFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (checkLocationOn())getLocation();
                 setYelpApi('d');
             }
         });
         ratingsFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (checkLocationOn())getLocation();
                 setYelpApi('r');
             }
         });
         dealsFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (checkLocationOn())getLocation();
                 setYelpApi('$');
             }
         });
     }
-
 
     private void setYelpApi(char c){
         Log.i(TAG, "setYelpApi: inside");
@@ -177,21 +183,6 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         this.longitude = location[1];
     }
 
-    private double[] getLocation(){
-        if ( ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-        }
-        String locationProvider = LocationManager.NETWORK_PROVIDER;
-        Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
-        Log.i(TAG, "getLocation: Lat: " + lastKnownLocation.getLatitude());
-        Log.i(TAG, "getLocation: Long: " + lastKnownLocation.getLongitude());
-        latitude = lastKnownLocation.getLatitude();
-        longitude = lastKnownLocation.getLongitude();
-        double[] location = {lastKnownLocation.getLatitude(),lastKnownLocation.getLongitude()};
-        return location;
-    }
-
-
 
     private void fillList(){
         for (int i = 1; i <= 25; i++){
@@ -226,4 +217,95 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         startActivity(detailIntent);
     }
 
+
+    private double[] getLocation(){
+        double[] location = new double[2];
+        if (permissionExists()){
+            String locationProvider = LocationManager.NETWORK_PROVIDER;
+            Location lastKnownLocation;
+            try {
+                lastKnownLocation= locationManager.getLastKnownLocation(locationProvider);
+                Log.i(TAG, "getLocation: Lat: " + lastKnownLocation.getLatitude());
+                Log.i(TAG, "getLocation: Long: " + lastKnownLocation.getLongitude());
+                latitude = lastKnownLocation.getLatitude();
+                longitude = lastKnownLocation.getLongitude();
+                location[0] = lastKnownLocation.getLatitude();
+                location[1] = lastKnownLocation.getLongitude();
+            }catch (SecurityException e) {
+                Toast.makeText(getContext(), "You need to grant location permission", Toast.LENGTH_SHORT).show();
+            }
+            return location;
+        } else{
+            requestUserForPermission();
+        }
+        return location;
+    }
+
+    @TargetApi(23)
+    private boolean permissionExists(){
+        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+        if (currentApiVersion < Build.VERSION_CODES.M){
+
+            // Permissions are already granted during INSTALL TIME for older OS version
+            return true;
+        }
+
+        int granted = getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+        if (granted == PackageManager.PERMISSION_GRANTED){
+            return true;
+        }
+        return false;
+    }
+
+    @TargetApi(23)
+    private void requestUserForPermission(){
+        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+        if (currentApiVersion < Build.VERSION_CODES.M){
+            // This OS version is lower then Android M, therefore we have old permission model and should not ask for permission
+            return;
+        }
+        String[] permissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
+        requestPermissions(permissions, PERMISSION_REQUEST_CODE);
+    }
+
+    private boolean checkLocationOn(){
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            //All location services are disabled
+            Toast.makeText(getContext(),"Please Enable Location",Toast.LENGTH_LONG).show();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+
+        switch (requestCode) {
+            case PERMISSION_REQUEST_CODE:
+                if (permissions.length < 0) {
+                    return; // no permissions were returned, nothing to process here
+                }
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // contacts permission was granted! Lets now grab contacts or show them!
+                    String locationProvider = LocationManager.NETWORK_PROVIDER;
+                    Location lastKnownLocation;
+                    try {
+                        lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+                        Log.i(TAG, "getLocation: Lat: " + lastKnownLocation.getLatitude());
+                        Log.i(TAG, "getLocation: Long: " + lastKnownLocation.getLongitude());
+                        double[] location = {lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()};
+
+                    } catch (SecurityException e) {
+                        Toast.makeText(getContext(), "You need to grant location permission", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // contacts permission was denied, lets warn the user that we need this permission!
+                    Toast.makeText(getContext(), "You need to grant location permission", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                break;
+        }
+    }
 }
