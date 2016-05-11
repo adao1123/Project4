@@ -27,6 +27,7 @@ import com.example.ratemyboba.adapters.TeaAdapter;
 import com.example.ratemyboba.adapters.TeaShopAdapter;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.RV_Space_Decoration;
+import com.firebase.client.Firebase;
 import com.github.clans.fab.FloatingActionButton;
 import com.yelp.clientlib.connection.YelpAPI;
 import com.yelp.clientlib.connection.YelpAPIFactory;
@@ -64,6 +65,8 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     private double latitude;
     private double longitude;
     private LocationManager locationManager;
+    TeaAdapter teaAdapter;
+
 
     @Nullable
     @Override
@@ -84,14 +87,25 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaShopList = new ArrayList<>();
         fillList(); //TEMP/PLACEHOLDER
         locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
-//        setRV();
-        setTeaShopRV();
+        setRV();
+//        setTeaRV();
+//        setTeaShopRV();
+        teaRV.setAdapter(teaAdapter);
         setFabListener();
     }
 
     private void setRV(){
-        TeaAdapter teaAdapter = new TeaAdapter(teaList,this);
-        teaRV.setAdapter(teaAdapter);
+        teaAdapter = new TeaAdapter(teaList,this);
+        teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
+        teaRV.setLayoutManager(gridLayoutManager);
+        RV_Space_Decoration decoration = new RV_Space_Decoration(14);
+        teaRV.addItemDecoration(decoration);
+    }
+
+    private void setTeaRV(){
+        fillTempList();
+        teaAdapter = new TeaAdapter(teaList,this);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
         teaRV.setLayoutManager(gridLayoutManager);
         RV_Space_Decoration decoration = new RV_Space_Decoration(16);
@@ -100,41 +114,18 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 
     private void setTeaShopRV(){
         teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
-        teaRV.setAdapter(teaShopAdapter);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
         teaRV.setLayoutManager(gridLayoutManager);
         RV_Space_Decoration decoration = new RV_Space_Decoration(14);
         teaRV.addItemDecoration(decoration);
     }
 
-    private void setFabListener(){
-        bobaFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bobaFabListener.onDistanceFabClick();
-            }
-        });
-        distanceFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkLocationOn())getLocation();
-                setYelpApi('d');
-            }
-        });
-        ratingsFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkLocationOn())getLocation();
-                setYelpApi('r');
-            }
-        });
-        dealsFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkLocationOn())getLocation();
-                setYelpApi('$');
-            }
-        });
+    private void initFirebase(){
+        Firebase firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
+        Firebase firebaseChildShop = firebaseRef.child("Shops").child("i-tea-san-francisco-3");
+        if (firebaseChildShop!=null) {
+
+        }
     }
 
     private void setYelpApi(char c){
@@ -153,7 +144,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         CoordinateOptions coordinate = CoordinateOptions.builder()
                 .latitude(latitude)
                 .longitude(longitude).build();
-        Call<SearchResponse> call = yelpAPI.search(coordinate,params);
+        Call<SearchResponse> call = yelpAPI.search(coordinate, params);
         call.enqueue(new Callback<SearchResponse>() {
             @Override
             public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
@@ -178,16 +169,23 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         });
     }
 
-    public void setLocation(double[] location){
-        this.latitude = location[0];
-        this.longitude = location[1];
-    }
-
-
     private void fillList(){
         for (int i = 1; i <= 25; i++){
             teaList.add(new Tea("Boba " + i));
         }
+    }
+
+    private void fillTempList(){
+//        for (int i = 0; i<25; i++){
+//            teaList.add(new Tea("Boba Tea " + i));
+//            firebaseTeas.push().setValue(new Tea("Boba Tea " + i));
+//        }
+        teaList.add(new Tea("Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Milk-Tea.jpg"));
+        teaList.add(new Tea("Taro Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Taro1.jpg"));
+        teaList.add(new Tea("Oolong Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Oolong-Green.jpg"));
+        teaList.add(new Tea("Almond Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Almond.jpg"));
+        teaList.add(new Tea("Jasmine Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Jasmine.jpg"));
+        teaList.add(new Tea("Honey Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Honey.jpg"));
     }
 
     public interface OnBobaFabClickListener {
@@ -205,6 +203,41 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         bobaFabListener = (OnBobaFabClickListener)getActivity();
     }
 
+    private void setFabListener(){
+        bobaFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                teaRV.setAdapter(teaAdapter);
+
+//                bobaFabListener.onDistanceFabClick();
+            }
+        });
+        distanceFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                teaRV.setAdapter(teaShopAdapter);
+                if (checkLocationOn()) getLocation();
+                setYelpApi('d');
+            }
+        });
+        ratingsFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                teaRV.setAdapter(teaShopAdapter);
+                if (checkLocationOn())getLocation();
+                setYelpApi('r');
+            }
+        });
+        dealsFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                teaRV.setAdapter(teaShopAdapter);
+                if (checkLocationOn()) getLocation();
+                setYelpApi('$');
+            }
+        });
+    }
+
     @Override
     public void onTeaClick(Tea tea) {
         teaListener.passClickedTea(tea);
@@ -217,6 +250,10 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         startActivity(detailIntent);
     }
 
+    public void setLocation(double[] location){
+        this.latitude = location[0];
+        this.longitude = location[1];
+    }
 
     private double[] getLocation(){
         double[] location = new double[2];
