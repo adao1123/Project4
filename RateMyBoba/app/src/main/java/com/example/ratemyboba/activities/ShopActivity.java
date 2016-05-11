@@ -65,6 +65,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     private Firebase firebaseShops;
     private Firebase firebaseChildShop;
     private Firebase firebaseReviews;
+    private Firebase firebaseTeas;
     private AuthData authData;
     private int rating =0;
 
@@ -79,7 +80,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         initViews();
         handleYelpAPI();
         setPhoneIntent();
-        setBobaRV();
         submitReviewListener();
     }
 
@@ -166,20 +166,22 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     }
     private void setBobaRV(){
         teaList = new ArrayList<>();
-        fillTempList();
-        TeaAdapter teaAdapter = new TeaAdapter(teaList,this);//PLACEHOLDER
-        bobaRV.setAdapter(teaAdapter);
+        FirebaseRecyclerAdapter mAdapter = new FirebaseRecyclerAdapter<Tea, BobaViewHolder>(Tea.class, R.layout.rv_tea_item, BobaViewHolder.class, firebaseTeas) {
+            @Override
+            protected void populateViewHolder(BobaViewHolder bobaViewHolder, Tea tea, int i) {
+                bobaViewHolder.titleTV.setText(tea.getTitle());
+                Picasso.with(ShopActivity.this)
+                        .load(tea.getImageUrl())
+                        .into(bobaViewHolder.imageView);
+            }
+        };
+        //TeaAdapter teaAdapter = new TeaAdapter(teaList,this);//PLACEHOLDER
+        bobaRV.setAdapter(mAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         bobaRV.setLayoutManager(linearLayoutManager);
         RV_Space_Decoration decoration = new RV_Space_Decoration(14);
         bobaRV.addItemDecoration(decoration);
-    }
-
-    private void fillTempList(){
-        for (int i = 0; i<25; i++){
-            teaList.add(new Tea("Boba Tea " + i));
-        }
     }
 
     private void initFirebase(){
@@ -195,6 +197,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         //firebaseReviews.setValue(teaShop.reviews().get(0).ratingImageLargeUrl());
         Log.i(TAG, "initFirebase: Rating image " + teaShop.ratingImgUrlLarge());
         firebaseReviews = firebaseChildShop.child("review");
+        firebaseTeas = firebaseChildShop.child("teas");
         firebaseReviews.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -208,8 +211,19 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
 
             }
         });
-        setReviewRV();
+        firebaseTeas.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!dataSnapshot.hasChildren()) fillTempList();
+            }
 
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+        setReviewRV();
+        setBobaRV();
     }
 
     private void submitReviewListener(){
@@ -272,5 +286,34 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             reviewRatingTV = (TextView)itemView.findViewById(R.id.rv_review_rating);
         }
     }
+
+    public static class BobaViewHolder extends RecyclerView.ViewHolder {
+        public TextView titleTV;
+        public ImageView imageView;
+        public Button upButton;
+        public Button downButton;
+
+        public BobaViewHolder(View itemView) {
+            super(itemView);
+            titleTV = (TextView)itemView.findViewById(R.id.rv_tea_name);
+            imageView = (ImageView)itemView.findViewById(R.id.rv_tea_image);
+            upButton = (Button)itemView.findViewById(R.id.rv_tea_plus);
+            downButton = (Button)itemView.findViewById(R.id.rv_tea_minus);
+        }
+    }
+
+    private void fillTempList(){
+//        for (int i = 0; i<25; i++){
+//            teaList.add(new Tea("Boba Tea " + i));
+//            firebaseTeas.push().setValue(new Tea("Boba Tea " + i));
+//        }
+        firebaseTeas.push().setValue(new Tea("Milk Tea","http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Milk-Tea.jpg"));
+        firebaseTeas.push().setValue(new Tea("Taro Tea","http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Taro1.jpg"));
+        firebaseTeas.push().setValue(new Tea("Oolong Tea","http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Oolong-Green.jpg"));
+        firebaseTeas.push().setValue(new Tea("Almond Tea","http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Almond.jpg"));
+        firebaseTeas.push().setValue(new Tea("Jasmine Tea","http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Jasmine.jpg"));
+        firebaseTeas.push().setValue(new Tea("Honey Tea","http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Honey.jpg"));
+    }
+
 
 }

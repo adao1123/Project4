@@ -5,6 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.ratemyboba.R;
@@ -33,7 +35,7 @@ public class TeaAdapter extends RecyclerView.Adapter<TeaAdapter.ViewHolder> {
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
-        View teaView = inflater.inflate(R.layout.rv_item, parent, false);
+        View teaView = inflater.inflate(R.layout.rv_tea_item, parent, false);
         ViewHolder viewHolder = new ViewHolder(teaView);
         return viewHolder;
     }
@@ -53,9 +55,16 @@ public class TeaAdapter extends RecyclerView.Adapter<TeaAdapter.ViewHolder> {
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         public TextView titleTV;
+        public ImageView imageView;
+        public Button upButton;
+        public Button downButton;
+
         public ViewHolder(View itemView) {
             super(itemView);
-            titleTV = (TextView)itemView.findViewById(R.id.rv_title_id);
+            titleTV = (TextView)itemView.findViewById(R.id.rv_tea_name);
+            imageView = (ImageView)itemView.findViewById(R.id.rv_tea_image);
+            upButton = (Button)itemView.findViewById(R.id.rv_tea_plus);
+            downButton = (Button)itemView.findViewById(R.id.rv_tea_minus);
         }
         public void bind(final Tea tea, final OnTeaClickListener listener){
             itemView.setOnClickListener(new View.OnClickListener() {
