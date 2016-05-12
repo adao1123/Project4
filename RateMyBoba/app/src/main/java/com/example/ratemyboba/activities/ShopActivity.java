@@ -481,7 +481,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         EditText makeTeaNameET = (EditText)findViewById(R.id.shop_make_tea_id);
 
         firebaseTeas.child(makeTeaNameET.getText().toString()).setValue(new Tea(makeTeaNameET.getText().toString(),base64Image));
-
+        makeTeaNameET.getText().clear();
 //         we finally have our base64 string version of the image, save it.
 //        firebaseTeas.child().setValue(base64Image);
         System.out.println("Stored image with length: " + bytes.length);

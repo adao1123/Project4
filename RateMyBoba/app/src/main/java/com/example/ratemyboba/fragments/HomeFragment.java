@@ -17,6 +17,8 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -29,6 +31,7 @@ import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.RV_Space_Decoration;
 import com.firebase.client.Firebase;
 import com.github.clans.fab.FloatingActionButton;
+import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.yelp.clientlib.connection.YelpAPI;
 import com.yelp.clientlib.connection.YelpAPIFactory;
 import com.yelp.clientlib.entities.Business;
@@ -64,8 +67,10 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     private TeaShopAdapter teaShopAdapter;
     private double latitude;
     private double longitude;
+    private double withinDistance = 16100; //default within 10 miles
     private LocationManager locationManager;
     TeaAdapter teaAdapter;
+    MaterialSpinner withinDistanceSpinner;
 
 
     @Nullable
@@ -77,21 +82,51 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         distanceFab = (FloatingActionButton)view.findViewById(R.id.home_fab_distance_id);
         ratingsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_rating_id);
         dealsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_deals_id);
+        withinDistanceSpinner = (MaterialSpinner) view.findViewById(R.id.spinner);
+
         return view;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         teaList = new ArrayList<>();
         teaShopList = new ArrayList<>();
         fillTempList(); //TEMP/PLACEHOLDER
+        setDistanceSpinner();
         locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
         setRV();
 //        setTeaRV();
 //        setTeaShopRV();
         teaRV.setAdapter(teaAdapter);
         setFabListener();
+    }
+
+    private void setDistanceSpinner(){
+        withinDistanceSpinner.setItems("Within 5 miles", "Within 10 miles", "Within 15 miles", "Within 20 miles");
+        withinDistanceSpinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
+            @Override
+            public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
+                switch (position){
+                    case 0:
+                        withinDistance = 8050; // 5 miles to meters
+                        break;
+                    case 1:
+                        withinDistance = 16100; // 10 miles to meters
+                        break;
+                    case 2:
+                        withinDistance = 24150; // 15 miles to meters
+                        break;
+                    case 3:
+                        withinDistance = 32200; // 20 miles to meters
+                        break;
+                    default:
+                        withinDistance = 16100; //default 10 miles
+                        break;
+                }
+            }
+        });
     }
 
     private void setRV(){
@@ -120,13 +155,13 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaRV.addItemDecoration(decoration);
     }
 
-    private void initFirebase(){
-        Firebase firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
-        Firebase firebaseChildShop = firebaseRef.child("Shops").child("i-tea-san-francisco-3");
-        if (firebaseChildShop!=null) {
-
-        }
-    }
+//    private void initFirebase(){
+//        Firebase firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
+//        Firebase firebaseChildShop = firebaseRef.child("Shops").child("i-tea-san-francisco-3");
+//        if (firebaseChildShop!=null) {
+//
+//        }
+//    }
 
     private void setYelpApi(char c){
         Log.i(TAG, "setYelpApi: inside");
@@ -138,6 +173,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         params.put("category_filter","bubbletea");
 //        params.put("term", "Boba");
         params.put("limit","20");
+        params.put("radius_filter",withinDistance+"");
         if (c == 'r') params.put("sort","2");
         else params.put("sort","1");
         if (c == '$') params.put("deals_filter","true");
@@ -262,12 +298,14 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             Location lastKnownLocation;
             try {
                 lastKnownLocation= locationManager.getLastKnownLocation(locationProvider);
-                Log.i(TAG, "getLocation: Lat: " + lastKnownLocation.getLatitude());
-                Log.i(TAG, "getLocation: Long: " + lastKnownLocation.getLongitude());
-                latitude = lastKnownLocation.getLatitude();
-                longitude = lastKnownLocation.getLongitude();
-                location[0] = lastKnownLocation.getLatitude();
-                location[1] = lastKnownLocation.getLongitude();
+                if (lastKnownLocation!=null) {
+                    Log.i(TAG, "getLocation: Lat: " + lastKnownLocation.getLatitude());
+                    Log.i(TAG, "getLocation: Long: " + lastKnownLocation.getLongitude());
+                    latitude = lastKnownLocation.getLatitude();
+                    longitude = lastKnownLocation.getLongitude();
+                    location[0] = lastKnownLocation.getLatitude();
+                    location[1] = lastKnownLocation.getLongitude();
+                }else Toast.makeText(getContext(),"Acquiring Location",Toast.LENGTH_LONG).show();
             }catch (SecurityException e) {
                 Toast.makeText(getContext(), "You need to grant location permission", Toast.LENGTH_SHORT).show();
             }
@@ -277,6 +315,14 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         }
         return location;
     }
+
+
+
+//    @Override
+//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//        inflater.inflate(R.menu.menu_search, menu);
+//        super.onCreateOptionsMenu(menu, inflater);
+//    }
 
     @TargetApi(23)
     private boolean permissionExists(){
