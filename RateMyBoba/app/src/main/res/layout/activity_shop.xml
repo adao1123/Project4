@@ -46,6 +46,20 @@
             android:id="@+id/shop_bobaRV_id"
             android:layout_width="match_parent"
             android:layout_height="300dp"/>
+
+        <ImageView
+            android:id="@+id/shop_photo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/shop_make_tea_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/shop_takephoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/shop_reviews_id"
             android:layout_width="match_parent"

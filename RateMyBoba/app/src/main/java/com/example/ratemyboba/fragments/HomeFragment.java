@@ -85,7 +85,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         super.onViewCreated(view, savedInstanceState);
         teaList = new ArrayList<>();
         teaShopList = new ArrayList<>();
-        fillList(); //TEMP/PLACEHOLDER
+        fillTempList(); //TEMP/PLACEHOLDER
         locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
         setRV();
 //        setTeaRV();

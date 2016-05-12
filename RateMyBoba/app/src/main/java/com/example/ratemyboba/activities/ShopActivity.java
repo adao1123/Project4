@@ -1,13 +1,23 @@
 package com.example.ratemyboba.activities;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +46,10 @@ import com.yelp.clientlib.connection.YelpAPIFactory;
 import com.yelp.clientlib.entities.Business;
 import com.yelp.clientlib.entities.Deal;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import retrofit2.Call;
@@ -44,6 +58,12 @@ import retrofit2.Response;
 
 public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaClickListener{
 
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
+    };
     private static final String TAG = "SHOP ACTIVITY";
     private Business teaShop;
     private TextView titleTV;
@@ -82,6 +102,14 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         handleYelpAPI();
         setPhoneIntent();
         submitReviewListener();
+
+        Button takePhotoButton = (Button)findViewById(R.id.shop_takephoto);
+        takePhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                verifyStoragePermissions(ShopActivity.this);
+            }
+        });
     }
 
     private void handleYelpAPI(){
@@ -183,7 +211,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         firebaseReviews.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Review review = new Review(teaShop.reviews().get(0).user().name(),teaShop.reviews().get(0).excerpt(),teaShop.reviews().get(0).rating()+"");
+                Review review = new Review(teaShop.reviews().get(0).user().name(), teaShop.reviews().get(0).excerpt(), teaShop.reviews().get(0).rating() + "");
                 if (!dataSnapshot.hasChildren()) firebaseReviews.push().setValue(review);
                 Log.i(TAG, "onDataChange: inside ");
             }
@@ -217,9 +245,14 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             @Override
             protected void populateViewHolder(final BobaViewHolder bobaViewHolder, final Tea tea, int i) {
                 bobaViewHolder.titleTV.setText(tea.getTitle());
-                Picasso.with(ShopActivity.this)
-                        .load(tea.getImageUrl())
-                        .into(bobaViewHolder.imageView);
+                if (!tea.getImageUrl().contains("http")){
+                    byte[] imageAsBytes = Base64.decode(tea.getImageUrl().getBytes(),Base64.DEFAULT);
+                    bobaViewHolder.imageView.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes,0,imageAsBytes.length));
+                }else {
+                    Picasso.with(ShopActivity.this)
+                            .load(tea.getImageUrl())
+                            .into(bobaViewHolder.imageView);
+                }
                 bobaViewHolder.pointsTV.setText(tea.getPoints()*(-1)+"");
 
                 firebaseTeas.child(tea.getTitle()).addValueEventListener(new ValueEventListener() {
@@ -351,4 +384,107 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         firebaseTeas.child("Jasmine Milk Tea").setValue(new Tea("Jasmine Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Jasmine.jpg"));
         firebaseTeas.child("Honey Milk Tea").setValue(new Tea("Honey Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Honey.jpg"));
     }
+
+    private static final int TAKE_PICTURE = 1;
+    private Uri imageUri;
+
+    public void takePhoto() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File photo = new File(Environment.getExternalStorageDirectory(),  "Pic.jpg");
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,
+                Uri.fromFile(photo));
+        imageUri = Uri.fromFile(photo);
+        startActivityForResult(intent, TAKE_PICTURE);
+    }
+
+    public void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }else {
+            takePhoto();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case TAKE_PICTURE:
+                if (resultCode == Activity.RESULT_OK) {
+                    storeImageToFirebase();
+                    Uri selectedImage = imageUri;
+//                    getContentResolver().notifyChange(selectedImage, null);
+//                    ImageView imageView = (ImageView) findViewById(R.id.shop_photo);
+//                    ContentResolver cr = getContentResolver();
+//                    Bitmap bitmap;
+//                    Log.i(TAG, "onActivityResult: " + imageUri);
+//                    try {
+//                        bitmap = android.provider.MediaStore.Images.Media
+//                                .getBitmap(cr, selectedImage);
+//
+//                    //    imageView.setImageBitmap(bitmap);
+//                        Toast.makeText(this, selectedImage.toString(),
+//                                Toast.LENGTH_LONG).show();
+//                        Log.i(TAG, "onActivityResult:tooking picture. In try  ");
+//                    } catch (Exception e) {
+//                        Toast.makeText(this, "Failed to load", Toast.LENGTH_SHORT)
+//                                .show();
+//                        Log.e("Camera", e.toString());
+//                    }
+
+
+//                    //Bitmap bmp =  BitmapFactory..decodeFile(imageUri);//decodeResource(getResources(), R.drawable.chicken);//your image
+//                    Bitmap  bmp = null;
+//                    //TODO: PUT THIS IN SEPERATE THREAD
+//                    try {
+//                        bmp = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+//                    }catch (FileNotFoundException e){
+//
+//                    }catch (IOException e){
+//
+//                    }
+//                    ByteArrayOutputStream bYtE = new ByteArrayOutputStream();
+//                    if (bmp!=null) {
+//                        bmp.compress(Bitmap.CompressFormat.PNG, 100, bYtE);
+//                        bmp.recycle();
+//                        byte[] byteArray = bYtE.toByteArray();
+//                        String imageFile = Base64.encodeToString(byteArray, Base64.DEFAULT);
+//                        Log.i(TAG, "onActivityResult: IMAGEFILE BYTE" + imageFile);
+//
+//                        EditText makeTeaNameET = (EditText)findViewById(R.id.shop_make_tea_id);
+//
+//
+//                        firebaseTeas.child(makeTeaNameET.getText().toString()).setValue(new Tea(makeTeaNameET.getText().toString(),imageFile));
+//                    }
+//
+//
+                }
+        }
+    }
+
+    private void storeImageToFirebase() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 8; // shrink it down otherwise we will use stupid amounts of memory
+        Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] bytes = baos.toByteArray();
+        String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
+        EditText makeTeaNameET = (EditText)findViewById(R.id.shop_make_tea_id);
+
+        firebaseTeas.child(makeTeaNameET.getText().toString()).setValue(new Tea(makeTeaNameET.getText().toString(),base64Image));
+
+//         we finally have our base64 string version of the image, save it.
+//        firebaseTeas.child().setValue(base64Image);
+        System.out.println("Stored image with length: " + bytes.length);
+    }
+
 }
