@@ -63,7 +63,7 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/shop_reviews_id"
             android:layout_width="match_parent"
-            android:layout_height="400dp" />
+            android:layout_height="450dp" />
         <EditText
             android:id="@+id/shop_review_body_id"
             android:hint="Write Review"

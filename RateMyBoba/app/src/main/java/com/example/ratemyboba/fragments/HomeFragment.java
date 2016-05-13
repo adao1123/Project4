@@ -23,7 +23,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.ratemyboba.R;
@@ -78,6 +80,8 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     MaterialSpinner withinDistanceSpinner;
     EditText addressET;
     FloatingActionMenu fabMenu;
+    Button useLocationButton;
+    LinearLayout enterLocationLayout;
 
     @Nullable
     @Override
@@ -91,6 +95,8 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         withinDistanceSpinner = (MaterialSpinner) view.findViewById(R.id.shop_spinner);
         addressET = (EditText)view.findViewById(R.id.shop_address_et_id);
         fabMenu = (FloatingActionMenu)view.findViewById(R.id.shop_fab_menu);
+        useLocationButton = (Button)view.findViewById(R.id.shop_address_clear);
+        enterLocationLayout = (LinearLayout)view.findViewById(R.id.shop_enter_location_id);
         return view;
     }
 
@@ -108,6 +114,12 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 //        setTeaShopRV();
         teaRV.setAdapter(teaAdapter);
         setFabListener();
+        useLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addressET.getText().clear();
+            }
+        });
     }
 
     private void setDistanceSpinner(){
@@ -274,17 +286,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         fabMenu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
             @Override
             public void onMenuToggle(boolean opened) {
-                if (opened)addressET.setVisibility(View.VISIBLE);
-                else addressET.setVisibility(View.INVISIBLE);
+                if (opened)enterLocationLayout.setVisibility(View.VISIBLE);
+                else enterLocationLayout.setVisibility(View.INVISIBLE);
                 Log.i(TAG, "onMenuToggle: ");
-            }
-        });
-        fabMenu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "onClick: fab menu open");
-                if (!fabMenu.isOpened())addressET.setVisibility(View.VISIBLE);
-                else addressET.setVisibility(View.INVISIBLE);
             }
         });
 

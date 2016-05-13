@@ -28,6 +28,7 @@ android {
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
+    jcenter()
 
 }
 
@@ -49,4 +50,5 @@ dependencies {
     compile 'com.firebaseui:firebase-ui:0.3.1'
     compile 'com.jaredrummler:material-spinner:1.0.9'
     compile 'gr.pantrif:easy-android-splash-screen:0.0.1'
+
 }
