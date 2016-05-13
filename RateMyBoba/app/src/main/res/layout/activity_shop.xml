@@ -22,22 +22,54 @@
             android:layout_height="wrap_content"
             android:scaleType="fitStart"
             android:adjustViewBounds="true"/>
-        <TextView
-            android:id="@+id/shop_title_id"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:id="@+id/shop_phone_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:layout_marginRight="-5dp"
+            android:layout_marginLeft="-5dp"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/shop_title_id"
+                android:layout_width="match_parent"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:gravity="center_vertical"
+                android:paddingLeft="15dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/colorAccent"
+                android:textSize="30sp"/>
+            <TextView
+                android:id="@+id/shop_phone_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="15dp"
+                android:textStyle="bold"
+                android:paddingBottom="15dp"
+                android:textColor="@color/colorAccent"
+                android:gravity="center"
+                android:layout_weight="2"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:id="@+id/shop_url_id"
+                android:layout_width="match_parent"
+                android:layout_weight="2"
+                android:gravity="center"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:textSize="20sp"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
         <ImageView
             android:id="@+id/shop_rating_id"
+            android:paddingTop="20dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <TextView
-            android:id="@+id/shop_url_id"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_weight="2"/>
         <TextView
             android:id="@+id/shop_deals_id"
             android:layout_width="match_parent"
@@ -52,26 +84,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <EditText
+            android:layout_marginTop="20dp"
             android:id="@+id/shop_make_tea_id"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:hint="Add New Tea"/>
         <Button
             android:id="@+id/shop_takephoto"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="Take Photo"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/shop_reviews_id"
             android:layout_width="match_parent"
-            android:layout_height="450dp" />
+            android:layout_height="480dp" />
         <EditText
             android:id="@+id/shop_review_body_id"
             android:hint="Write Review"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <EditText
-            android:id="@+id/shop_review_rating_id"
-            android:hint="Rating"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <com.francescocervone.openratingview.RatingView
@@ -83,6 +113,7 @@
         <Button
             android:id="@+id/shop_review_submit_id"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="Submit Review"/>
     </LinearLayout>
 </ScrollView>

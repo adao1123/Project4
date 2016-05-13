@@ -197,4 +197,9 @@ public class MainActivity extends AppCompatActivity implements
 //            //return location;
 //        }else Toast.makeText(MainActivity.this,"You need to grant location permission",Toast.LENGTH_LONG).show();
     }
+
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+    }
 }

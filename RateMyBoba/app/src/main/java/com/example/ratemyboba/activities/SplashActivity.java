@@ -17,13 +17,14 @@ public class SplashActivity extends AppCompatActivity {
         View easySplashScreenView = new EasySplashScreen(SplashActivity.this)
                 .withFullScreen()
                 .withTargetActivity(FacebookActivity.class)
-                .withSplashTimeOut(3000)
-                .withBackgroundResource(R.color.colorPrimary)
+                .withSplashTimeOut(6000)
+                .withBackgroundResource(R.color.colorAccent)
                 .withHeaderText("Rate My Boba")
                 .withFooterText("Find your fix")
-                .withBeforeLogoText("My cool company")
-                .withLogo(R.drawable.ic_star_black)
-                .withAfterLogoText("Some more details")
+   //             .withBeforeLogoText("Rate My Boba")
+                .withLogo(R.drawable.bobaiconbig)
+//                .withLogo(R.mipmap.ic_boba)
+     //           .withAfterLogoText("Find Your Fix")
                 .create();
 
         setContentView(easySplashScreenView);

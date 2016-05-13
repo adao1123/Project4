@@ -140,7 +140,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         shopIV = (ImageView)findViewById(R.id.shop_image_id);
         bobaRV = (RecyclerView)findViewById(R.id.shop_bobaRV_id);
         reviewBodyET = (EditText)findViewById(R.id.shop_review_body_id);
-        reviewRatingET = (EditText)findViewById(R.id.shop_review_rating_id);
         submitButton = (Button)findViewById(R.id.shop_review_submit_id);
         ratingView = (RatingView)findViewById(R.id.shop_review_star_id);
     }
