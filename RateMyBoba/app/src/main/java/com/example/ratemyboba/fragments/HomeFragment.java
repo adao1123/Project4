@@ -5,6 +5,8 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -21,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.ratemyboba.R;
@@ -31,6 +34,7 @@ import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.RV_Space_Decoration;
 import com.firebase.client.Firebase;
 import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 import com.yelp.clientlib.connection.YelpAPI;
 import com.yelp.clientlib.connection.YelpAPIFactory;
@@ -38,6 +42,7 @@ import com.yelp.clientlib.entities.Business;
 import com.yelp.clientlib.entities.SearchResponse;
 import com.yelp.clientlib.entities.options.CoordinateOptions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +76,8 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     private LocationManager locationManager;
     TeaAdapter teaAdapter;
     MaterialSpinner withinDistanceSpinner;
-
+    EditText addressET;
+    FloatingActionMenu fabMenu;
 
     @Nullable
     @Override
@@ -82,8 +88,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         distanceFab = (FloatingActionButton)view.findViewById(R.id.home_fab_distance_id);
         ratingsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_rating_id);
         dealsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_deals_id);
-        withinDistanceSpinner = (MaterialSpinner) view.findViewById(R.id.spinner);
-
+        withinDistanceSpinner = (MaterialSpinner) view.findViewById(R.id.shop_spinner);
+        addressET = (EditText)view.findViewById(R.id.shop_address_et_id);
+        fabMenu = (FloatingActionMenu)view.findViewById(R.id.shop_fab_menu);
         return view;
     }
 
@@ -163,6 +170,21 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 //        }
 //    }
 
+    private double[] getCoorfromAddress(String address){
+        Geocoder geocoder = new Geocoder(getContext());
+        List<Address> coordinates;
+        double[] result = new double[2];
+        try{
+            coordinates = geocoder.getFromLocationName(address,1);
+            if (coordinates.size()<=0) return null;
+            result[0] = coordinates.get(0).getLatitude();
+            result[1] = coordinates.get(0).getLongitude();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     private void setYelpApi(char c){
         Log.i(TAG, "setYelpApi: inside");
         YelpAPIFactory yelpAPIFactory = new YelpAPIFactory(
@@ -172,14 +194,23 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         Map<String, String> params = new HashMap<>();
         params.put("category_filter","bubbletea");
 //        params.put("term", "Boba");
+
         params.put("limit","20");
         params.put("radius_filter",withinDistance+"");
         if (c == 'r') params.put("sort","2");
         else params.put("sort","1");
         if (c == '$') params.put("deals_filter","true");
-        CoordinateOptions coordinate = CoordinateOptions.builder()
-                .latitude(latitude)
-                .longitude(longitude).build();
+        CoordinateOptions coordinate;
+        if (!addressET.getText().toString().matches("")){
+            double[] targetCoor = getCoorfromAddress(addressET.getText().toString());
+            coordinate = CoordinateOptions.builder()
+                    .latitude(targetCoor[0])
+                    .longitude(targetCoor[1]).build();
+        }else {
+            coordinate = CoordinateOptions.builder()
+                    .latitude(latitude)
+                    .longitude(longitude).build();
+        }
         Call<SearchResponse> call = yelpAPI.search(coordinate, params);
         call.enqueue(new Callback<SearchResponse>() {
             @Override
@@ -240,6 +271,23 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     }
 
     private void setFabListener(){
+        fabMenu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
+            @Override
+            public void onMenuToggle(boolean opened) {
+                if (opened)addressET.setVisibility(View.VISIBLE);
+                else addressET.setVisibility(View.INVISIBLE);
+                Log.i(TAG, "onMenuToggle: ");
+            }
+        });
+        fabMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "onClick: fab menu open");
+                if (!fabMenu.isOpened())addressET.setVisibility(View.VISIBLE);
+                else addressET.setVisibility(View.INVISIBLE);
+            }
+        });
+
         bobaFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
