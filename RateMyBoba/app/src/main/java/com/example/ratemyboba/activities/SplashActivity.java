@@ -17,7 +17,7 @@ public class SplashActivity extends AppCompatActivity {
         View easySplashScreenView = new EasySplashScreen(SplashActivity.this)
                 .withFullScreen()
                 .withTargetActivity(FacebookActivity.class)
-                .withSplashTimeOut(6000)
+                .withSplashTimeOut(3000)
                 .withBackgroundResource(R.color.colorAccent)
                 .withHeaderText("Rate My Boba")
                 .withFooterText("Find your fix")

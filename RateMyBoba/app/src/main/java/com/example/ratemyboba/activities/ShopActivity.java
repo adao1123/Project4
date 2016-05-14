@@ -310,7 +310,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
                 Review review = new Review(userName,reviewBodyET.getText().toString(),rating+"");
                 firebaseReviews.push().setValue(review);
                 reviewBodyET.getText().clear();
-                reviewRatingET.getText().clear();
             }
         });
     }
