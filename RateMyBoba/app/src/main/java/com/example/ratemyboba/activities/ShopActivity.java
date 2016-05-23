@@ -106,6 +106,52 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     }
 
     /**
+     * After getting back from camera, and result is okay, call method to store image to firebase;
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case TAKE_PICTURE:
+                if (resultCode == Activity.RESULT_OK) {
+                    storeImageToFirebase();
+                }
+        }
+    }
+
+    /**
+     * When a tea in the Tea RecyclerView is clicked, nothing happens
+     * Future: Go into search of that type of milk tea.
+     * @param tea
+     */
+    @Override
+    public void onTeaClick(Tea tea) {
+
+    }
+
+    /**
+     * Initialize global views
+     */
+    private void initViews(){
+        titleTV = (TextView)findViewById(R.id.shop_title_id);
+        phoneTV = (TextView)findViewById(R.id.shop_phone_id);
+        openTV = (TextView)findViewById(R.id.shop_url_id);
+        dealsTV = (TextView)findViewById(R.id.shop_deals_id);
+        reviewBodyET = (EditText)findViewById(R.id.shop_review_body_id);
+        makeTeaNameET = (EditText)findViewById(R.id.shop_make_tea_id);
+        ratingIV = (ImageView)findViewById(R.id.shop_rating_id);
+        shopIV = (ImageView)findViewById(R.id.shop_image_id);
+        submitButton = (Button)findViewById(R.id.shop_review_submit_id);
+        takePhotoButton = (Button)findViewById(R.id.shop_takephoto);
+        bobaRV = (RecyclerView)findViewById(R.id.shop_bobaRV_id);
+        reviewsRV = (RecyclerView)findViewById(R.id.shop_reviews_id);
+        ratingView = (RatingView)findViewById(R.id.shop_review_star_id);
+    }
+
+    /**
      * Gets String teaID from intent and stores to global variable teaID
      * Returns teaID
      */
@@ -113,19 +159,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         Intent recieveIntent = getIntent();
         teaID = recieveIntent.getStringExtra(HomeFragment.DETAIL_KEY);
         return teaID;
-    }
-
-    /**
-     * Set takePhotoButton OnClickListener
-     * Calls verifyStoragePermissions when clicked
-     */
-    private void setPhotoButton(){
-        takePhotoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                verifyStoragePermissions(ShopActivity.this);
-            }
-        });
     }
 
     /**
@@ -152,22 +185,39 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     }
 
     /**
-     * Initialize global views
+     * Calls methods to create the firebase and add all data of the teaShop
      */
-    private void initViews(){
-        titleTV = (TextView)findViewById(R.id.shop_title_id);
-        phoneTV = (TextView)findViewById(R.id.shop_phone_id);
-        openTV = (TextView)findViewById(R.id.shop_url_id);
-        dealsTV = (TextView)findViewById(R.id.shop_deals_id);
-        reviewBodyET = (EditText)findViewById(R.id.shop_review_body_id);
-        makeTeaNameET = (EditText)findViewById(R.id.shop_make_tea_id);
-        ratingIV = (ImageView)findViewById(R.id.shop_rating_id);
-        shopIV = (ImageView)findViewById(R.id.shop_image_id);
-        submitButton = (Button)findViewById(R.id.shop_review_submit_id);
-        takePhotoButton = (Button)findViewById(R.id.shop_takephoto);
-        bobaRV = (RecyclerView)findViewById(R.id.shop_bobaRV_id);
-        reviewsRV = (RecyclerView)findViewById(R.id.shop_reviews_id);
-        ratingView = (RatingView)findViewById(R.id.shop_review_star_id);
+    private void manageFirebase(){
+        initFirebase();
+        getFirebaseAuth();
+        setShopInFirebase();
+        setReviewRV();
+        setBobaRV();
+    }
+
+    /**
+     * Sets all the views with data from the teaShop
+     */
+    private void displayViews(){
+        titleTV.setText(teaShop.name());
+        loadImagePicasso(shopIV,teaShop.imageUrl().replaceAll("ms", "o"));
+        phoneTV.setText(teaShop.displayPhone());
+        setOpenStatusTV();
+        loadImagePicasso(ratingIV,teaShop.ratingImgUrlLarge());
+        setDealsTV();
+    }
+
+    /**
+     * Set takePhotoButton OnClickListener
+     * Calls verifyStoragePermissions when clicked
+     */
+    private void setPhotoButton(){
+        takePhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                verifyStoragePermissions(ShopActivity.this);
+            }
+        });
     }
 
     /**
@@ -210,18 +260,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     }
 
     /**
-     * Sets all the views with data from the teaShop
-     */
-    private void displayViews(){
-        titleTV.setText(teaShop.name());
-        loadImagePicasso(shopIV,teaShop.imageUrl().replaceAll("ms", "o"));
-        phoneTV.setText(teaShop.displayPhone());
-        setOpenStatusTV();
-        loadImagePicasso(ratingIV,teaShop.ratingImgUrlLarge());
-        setDealsTV();
-    }
-
-    /**
      * Opens up phone dial on phones with the teaShop's phone number
      */
     private void setPhoneIntent(){
@@ -234,17 +272,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
                 startActivity(intent);
             }
         });
-    }
-
-    /**
-     * Calls methods to create the firebase and add all data of the teaShop
-     */
-    private void manageFirebase(){
-        initFirebase();
-        getFirebaseAuth();
-        setShopInFirebase();
-        setReviewRV();
-        setBobaRV();
     }
 
     /**
@@ -361,6 +388,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             public void onDataChange(DataSnapshot dataSnapshot) {
                 textView.setText(tea.getPoints() * (-1) + "");
             }
+
             @Override
             public void onCancelled(FirebaseError firebaseError) {
                 Log.e(TAG, "onCancelled: " + firebaseError.getMessage());
@@ -435,11 +463,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         });
     }
 
-    @Override
-    public void onTeaClick(Tea tea) {
-
-    }
-
     /**
      * Sets Review RecyclerView adapter and layout manager
      */
@@ -502,23 +525,6 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             ActivityCompat.requestPermissions(activity,PERMISSIONS_STORAGE,REQUEST_EXTERNAL_STORAGE);
         }else {
             takePhoto();
-        }
-    }
-
-    /**
-     * After getting back from camera, and result is okay, call method to store image to firebase;
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case TAKE_PICTURE:
-                if (resultCode == Activity.RESULT_OK) {
-                    storeImageToFirebase();
-                }
         }
     }
 
