@@ -9,7 +9,8 @@ import android.widget.TextView;
 import com.example.ratemyboba.R;
 
 /**
- * Created by adao1 on 5/23/2016.
+ * Created by adao1 on 5/23/2016
+ * View Holder for the boba recyclerview that holds TextView, ImageView, and Buttons
  */
 
 public class BobaViewHolder extends RecyclerView.ViewHolder {

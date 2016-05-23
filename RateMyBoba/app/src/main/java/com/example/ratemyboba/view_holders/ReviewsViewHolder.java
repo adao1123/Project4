@@ -8,6 +8,7 @@ import com.example.ratemyboba.R;
 
 /**
  * Created by adao1 on 5/23/2016.
+ * View Holder for Reviews recycler view that holds textviews to display review and rating
  */
 
 public class ReviewsViewHolder extends RecyclerView.ViewHolder {
