@@ -102,11 +102,20 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         setPhotoButton();
     }
 
-    private void getTeaId(){
+    /**
+     * Gets String teaID from intent and stores to global variable teaID
+     * Returns teaID
+     */
+    private String getTeaId(){
         Intent recieveIntent = getIntent();
         teaID = recieveIntent.getStringExtra(HomeFragment.DETAIL_KEY);
+        return teaID;
     }
 
+    /**
+     * Set takePhotoButton OnClickListener
+     * Calls verifyStoragePermissions when clicked
+     */
     private void setPhotoButton(){
         takePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,6 +125,10 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         });
     }
 
+    /**
+     * Create Yelp API factory and make call to get teaShop data from ID
+     * Calls methods to display Views and manage Firebase
+     */
     private void handleYelpAPI(){
         YelpAPIFactory apiFactory = new YelpAPIFactory(getString(R.string.YELP_CONSUMER_KEY), getString(R.string.YELP_CONSUMER_SECRET), getString(R.string.YELP_TOKEN_KEY), getString(R.string.YELP_TOKEN_SECRET));
         YelpAPI yelpAPI = apiFactory.createAPI();
@@ -127,14 +140,16 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
                 displayViews();
                 manageFirebase();
             }
-
             @Override
             public void onFailure(Call<Business> call, Throwable t) {
-
+                t.printStackTrace();
             }
         });
     }
 
+    /**
+     * Initialize global views
+     */
     private void initViews(){
         titleTV = (TextView)findViewById(R.id.shop_title_id);
         phoneTV = (TextView)findViewById(R.id.shop_phone_id);
@@ -230,61 +245,85 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         });
     }
 
+    /**
+     * Calls methods to create the firebase and add all data of the teaShop
+     */
     private void manageFirebase(){
         initFirebase();
         getFirebaseAuth();
         setShopInFirebase();
+        setReviewRV();
+        setBobaRV();
     }
 
-    private void getFirebaseAuth(){
-        authData = firebaseRef.getAuth();
-        String userID = authData.getUid();
-        userName = (String) authData.getProviderData().get("displayName");
-        Log.i(TAG, "initFirebase: PRINT NAME " + userName);
-    }
-
-    private void setShopInFirebase(){
-
-    }
     /**
-     *
+     * Creates the root Firebase ref and makes child "Shops"
      */
     private void initFirebase(){
         firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
         firebaseShops = firebaseRef.child("Shops");
+    }
+
+    /**
+     * Gets the current user's userName
+     * Returns the user name as well as set it to global variable userName
+     */
+    private String getFirebaseAuth(){
+        authData = firebaseRef.getAuth();
+        String userID = authData.getUid();
+        userName = (String) authData.getProviderData().get("displayName");
+        Log.i(TAG, "initFirebase: PRINT NAME " + userName);
+        return userName;
+    }
+
+    /**
+     * Makes the specific teaShop to Firebase and set child values: name and rating to it.
+     * Calls methods to add Reviews and Tea List
+     */
+    private void setShopInFirebase(){
         firebaseChildShop = firebaseShops.child(teaShop.id());
         firebaseChildShop.child("name").setValue(teaShop.name());
         firebaseChildShop.child("rating").setValue(teaShop.rating());
+        makeReviewFireBase();
+        makeTeaFireBase();
+    }
+
+    /**
+     * Makes the review child for specific store in Firebase
+     * Checks if there are any reviews, if not, creates a default review from Yelp
+     */
+    private void makeReviewFireBase(){
         firebaseReviews = firebaseChildShop.child("review");
-        firebaseTeas = firebaseChildShop.child("teas");
         firebaseReviews.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Review review = new Review(teaShop.reviews().get(0).user().name(), teaShop.reviews().get(0).excerpt(), teaShop.reviews().get(0).rating() + "");
                 if (!dataSnapshot.hasChildren()) firebaseReviews.push().setValue(review);
-                Log.i(TAG, "onDataChange: inside ");
             }
-
             @Override
             public void onCancelled(FirebaseError firebaseError) {
-
+                Log.i(TAG, "onCancelled: " + firebaseError.getMessage());
             }
         });
+    }
+
+    /**
+     * Makes the Tea chils for specific store in Firebase
+     * Checks if there are any teas in the tea list, if not, creates default placeholder teas
+     */
+    private void makeTeaFireBase(){
+        firebaseTeas = firebaseChildShop.child("teas");
         firebaseTeas.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!dataSnapshot.hasChildren()) fillTempList();
             }
-
             @Override
             public void onCancelled(FirebaseError firebaseError) {
-
+                Log.i(TAG, "onCancelled: " + firebaseError.getMessage());
             }
         });
-        setReviewRV();
-        setBobaRV();
     }
-
 
     private void setBobaRV(){
         teaList = new ArrayList<>();
