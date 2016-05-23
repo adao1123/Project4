@@ -58,52 +58,56 @@ import retrofit2.Response;
 
 public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaClickListener{
 
+    private static final String TAG = "SHOP ACTIVITY";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.CAMERA
     };
-    private static final String TAG = "SHOP ACTIVITY";
-    private Business teaShop;
     private TextView titleTV;
     private TextView openTV;
     private TextView phoneTV;
     private TextView dealsTV;
+    private ImageView ratingIV;
+    private ImageView shopIV;
     private RecyclerView reviewsRV;
+    private RecyclerView bobaRV;
+    private RatingView ratingView;
     private EditText reviewRatingET;
     private EditText reviewBodyET;
     private Button submitButton;
-    private RatingView ratingView;
-    private ImageView ratingIV;
-    private ImageView shopIV;
-    private String teaID;
-    private String userName;
-    private RecyclerView bobaRV;
-    private ArrayList<Tea> teaList;
+    private Button takePhotoButton;
     private Firebase firebaseRef;
-
     private Firebase firebaseShops;
     private Firebase firebaseChildShop;
     private Firebase firebaseReviews;
     private Firebase firebaseTeas;
     private AuthData authData;
-    private int rating =0;
-
+    private Business teaShop;
+    private ArrayList<Tea> teaList;
+    private String teaID;
+    private String userName;
+    private int rating = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shop);
-        Intent recieveIntent = getIntent();
-        teaID = recieveIntent.getStringExtra(HomeFragment.DETAIL_KEY);
-        Log.i(TAG, "onCreate: " + teaID);
         initViews();
+        getTeaId();
         handleYelpAPI();
         setPhoneIntent();
         submitReviewListener();
+        setPhotoButton();
+    }
 
-        Button takePhotoButton = (Button)findViewById(R.id.shop_takephoto);
+    private void getTeaId(){
+        Intent recieveIntent = getIntent();
+        teaID = recieveIntent.getStringExtra(HomeFragment.DETAIL_KEY);
+    }
+
+    private void setPhotoButton(){
         takePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -121,7 +125,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             public void onResponse(Call<Business> call, Response<Business> response) {
                 teaShop = response.body();
                 displayViews();
-                initFirebase();
+                manageFirebase();
             }
 
             @Override
@@ -130,6 +134,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             }
         });
     }
+
     private void initViews(){
         titleTV = (TextView)findViewById(R.id.shop_title_id);
         phoneTV = (TextView)findViewById(R.id.shop_phone_id);
@@ -142,13 +147,23 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         reviewBodyET = (EditText)findViewById(R.id.shop_review_body_id);
         submitButton = (Button)findViewById(R.id.shop_review_submit_id);
         ratingView = (RatingView)findViewById(R.id.shop_review_star_id);
+        takePhotoButton = (Button)findViewById(R.id.shop_takephoto);
     }
-    private void displayViews(){
-        titleTV.setText(teaShop.name());
-        Picasso.with(this)
-                .load(teaShop.imageUrl().replaceAll("ms", "o"))
-                .into(shopIV);
-        phoneTV.setText(teaShop.displayPhone());
+
+    /**
+     * Loads Image from ImageUri into ImageView using Picasso
+     * @param imageView
+     * @param imageUrl
+     */
+    private void loadImagePicasso(ImageView imageView, String imageUrl){
+        Picasso.with(this).load(imageUrl).into(imageView);
+    }
+
+    /**
+     * Sets text and textColor for open status textview
+     * Depending on whether the teaShop is opened or closed
+     */
+    private void setOpenStatusTV(){
         if (teaShop.isClosed()){
             openTV.setText("Closed");
             openTV.setTextColor(Color.RED);
@@ -156,31 +171,53 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             openTV.setText("Open");
             openTV.setTextColor(Color.GREEN);
         }
-//        if (teaShop.reviews()!=null){
-//            firebaseReviews.addValueEventListener(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(DataSnapshot dataSnapshot) {
-//                    reviewsRV.setText(dataSnapshot.getValue(String.class));
-//                }
-//
-//                @Override
-//                public void onCancelled(FirebaseError firebaseError) {
-//
-//                }
-//            });
-//        }
-        Picasso.with(this)
-                .load(teaShop.ratingImgUrlLarge())
-                .into(ratingIV);
-        if (teaShop.deals()!=null) {
-            String dealDisplay = "";
-            for (Deal deal : teaShop.deals()){
-                String tempDeal = deal.title() + "\n" + deal.additionalRestrictions() + "\n" + deal.importantRestrictions() + "\n" + deal.whatYouGet()+ "\n" +deal.timeStart()+ "\n" +deal.timeEnd();
-                dealDisplay += "\n\n" + tempDeal;
-            }
-            dealsTV.setText(dealDisplay);
-        }
     }
+
+    /**
+     * Sets line of text for Deals text view
+     * Only if there are deals present, else it will return
+     */
+    private void setDealsTV(){
+        if (teaShop.deals()==null)return;
+        String dealDisplay = "";
+        for (Deal deal : teaShop.deals()){
+            String tempDeal = deal.title() + "\n" + deal.additionalRestrictions() + "\n"
+                    + deal.importantRestrictions() + "\n" + deal.whatYouGet()+ "\n"
+                    +deal.timeStart()+ "\n" +deal.timeEnd();
+            dealDisplay += "\n\n" + tempDeal;
+        }
+        dealsTV.setText(dealDisplay);
+    }
+
+    /**
+     * Sets all the views with data from the teaShop
+     */
+    private void displayViews(){
+        titleTV.setText(teaShop.name());
+        loadImagePicasso(shopIV,teaShop.imageUrl().replaceAll("ms", "o"));
+//        Picasso.with(this)
+//                .load(teaShop.imageUrl().replaceAll("ms", "o"))
+//                .into(shopIV);
+        phoneTV.setText(teaShop.displayPhone());
+        setOpenStatusTV();
+        loadImagePicasso(ratingIV,teaShop.ratingImgUrlLarge());
+//        Picasso.with(this)
+//                .load(teaShop.ratingImgUrlLarge())
+//                .into(ratingIV);
+        setDealsTV();
+//        if (teaShop.deals()!=null) {
+//            String dealDisplay = "";
+//            for (Deal deal : teaShop.deals()){
+//                String tempDeal = deal.title() + "\n" + deal.additionalRestrictions() + "\n" + deal.importantRestrictions() + "\n" + deal.whatYouGet()+ "\n" +deal.timeStart()+ "\n" +deal.timeEnd();
+//                dealDisplay += "\n\n" + tempDeal;
+//            }
+//            dealsTV.setText(dealDisplay);
+//        }
+    }
+
+    /**
+     * Opens up phone dial on phones with the teaShop's phone number
+     */
     private void setPhoneIntent(){
         phoneTV.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,18 +230,31 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         });
     }
 
-    private void initFirebase(){
-        firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
+    private void manageFirebase(){
+        initFirebase();
+        getFirebaseAuth();
+        setShopInFirebase();
+    }
+
+    private void getFirebaseAuth(){
         authData = firebaseRef.getAuth();
         String userID = authData.getUid();
         userName = (String) authData.getProviderData().get("displayName");
         Log.i(TAG, "initFirebase: PRINT NAME " + userName);
+    }
+
+    private void setShopInFirebase(){
+
+    }
+    /**
+     *
+     */
+    private void initFirebase(){
+        firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
         firebaseShops = firebaseRef.child("Shops");
         firebaseChildShop = firebaseShops.child(teaShop.id());
         firebaseChildShop.child("name").setValue(teaShop.name());
         firebaseChildShop.child("rating").setValue(teaShop.rating());
-        //firebaseReviews.setValue(teaShop.reviews().get(0).ratingImageLargeUrl());
-        Log.i(TAG, "initFirebase: Rating image " + teaShop.ratingImgUrlLarge());
         firebaseReviews = firebaseChildShop.child("review");
         firebaseTeas = firebaseChildShop.child("teas");
         firebaseReviews.addListenerForSingleValueEvent(new ValueEventListener() {
