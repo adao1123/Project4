@@ -157,6 +157,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 
     private void setRV(){
         teaAdapter = new TeaAdapter(teaList,this);
+        if (checkLocationOn()) getLocation();
         teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
         teaRV.setLayoutManager(gridLayoutManager);
@@ -164,22 +165,22 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaRV.addItemDecoration(decoration);
     }
 
-    private void setTeaRV(){
-        fillTempList();
-        teaAdapter = new TeaAdapter(teaList,this);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
-        teaRV.setLayoutManager(gridLayoutManager);
-        RV_Space_Decoration decoration = new RV_Space_Decoration(16);
-        teaRV.addItemDecoration(decoration);
-    }
-
-    private void setTeaShopRV(){
-        teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
-        teaRV.setLayoutManager(gridLayoutManager);
-        RV_Space_Decoration decoration = new RV_Space_Decoration(14);
-        teaRV.addItemDecoration(decoration);
-    }
+//    private void setTeaRV(){
+//        fillTempList();
+//        teaAdapter = new TeaAdapter(teaList,this);
+//        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
+//        teaRV.setLayoutManager(gridLayoutManager);
+//        RV_Space_Decoration decoration = new RV_Space_Decoration(16);
+//        teaRV.addItemDecoration(decoration);
+//    }
+//
+//    private void setTeaShopRV(){
+//        teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
+//        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
+//        teaRV.setLayoutManager(gridLayoutManager);
+//        RV_Space_Decoration decoration = new RV_Space_Decoration(14);
+//        teaRV.addItemDecoration(decoration);
+//    }
 
 //    private void initFirebase(){
 //        Firebase firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
@@ -375,6 +376,10 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
                     longitude = lastKnownLocation.getLongitude();
                     location[0] = lastKnownLocation.getLatitude();
                     location[1] = lastKnownLocation.getLongitude();
+                    Log.i(TAG, "getLocation: latitude "+latitude);
+                    Log.i(TAG, "getLocation: longitude "+longitude);
+                    Log.i(TAG, "getLocation: latitude "+location[0]);
+                    Log.i(TAG, "getLocation: longitude "+location[1]);
                 }else Toast.makeText(getContext(),"Acquiring Location",Toast.LENGTH_LONG).show();
             }catch (SecurityException e) {
                 Toast.makeText(getContext(), "You need to grant location permission", Toast.LENGTH_SHORT).show();

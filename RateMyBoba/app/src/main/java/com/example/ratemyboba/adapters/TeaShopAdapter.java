@@ -59,6 +59,9 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
         TextView titleTV = holder.titleTV;
         TextView addressTV = holder.addressTV;
         TextView distanceTV = holder.distanceTV;
+        Log.i(TAG, "onBindViewHolder: ");
+        Log.i(TAG, "onBindViewHolder: Latitude "+latitude);
+        Log.i(TAG, "onBindViewHolder: Longitude "+longitude);
         double distance = Math.round(getDistance(latitude,longitude,teaShop.location().coordinate().latitude(),teaShop.location().coordinate().longitude()) * 100.0) / 100.0;
         distanceTV.setText(distance+"m");
         ImageView teaIV = holder.teaIV;
@@ -113,7 +116,9 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                         Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2));
         float c = (float) (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        return R * c/1609.34;//return miles
+        double miles = R *c/1609.34;
+        Log.i(TAG, "getDistance: miles"+miles);
+        return miles;//return miles
     }
     private static float toRad(double value) {
         return (float) (value * Math.PI / 180); //made this as a float alternative to Math.toRadians
