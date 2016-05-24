@@ -1,32 +1,38 @@
 package com.example.ratemyboba.activities;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
 import com.example.ratemyboba.R;
 
-import gr.net.maroulis.library.EasySplashScreen;
-
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends Activity {
+    private static boolean splashLoaded = false;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_splash);
-        View easySplashScreenView = new EasySplashScreen(SplashActivity.this)
-                .withFullScreen()
-                .withTargetActivity(FacebookActivity.class)
-                .withSplashTimeOut(3000)
-                .withBackgroundResource(R.color.colorAccent)
-                .withHeaderText("Rate My Boba")
-                .withFooterText("Find your fix")
-   //             .withBeforeLogoText("Rate My Boba")
-                .withLogo(R.drawable.bobaiconbig)
-//                .withLogo(R.mipmap.ic_boba)
-     //           .withAfterLogoText("Find Your Fix")
-                .create();
 
-        setContentView(easySplashScreenView);
+        if (!splashLoaded) {
+            setContentView(R.layout.activity_splash);
+            int secondsDelayed = 1;
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                    finish();
+                }
+            }, secondsDelayed * 500);
+
+            splashLoaded = true;
+        }
+        else {
+            Intent goToMainActivity = new Intent(SplashActivity.this, MainActivity.class);
+            goToMainActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(goToMainActivity);
+            finish();
+        }
     }
 }
