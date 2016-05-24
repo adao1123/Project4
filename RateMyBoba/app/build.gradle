@@ -37,6 +37,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     compile 'com.android.support:appcompat-v7:23.0.+'
+
     compile 'com.android.support:recyclerview-v7:23.0.+'
     compile 'com.yelp.clientlib:yelp-android:2.0.0'
     compile 'com.squareup.retrofit2:retrofit:2.0.1'
@@ -49,6 +50,5 @@ dependencies {
     compile 'com.github.francescocervone:OpenRatingView:1.0.1'
     compile 'com.firebaseui:firebase-ui:0.3.1'
     compile 'com.jaredrummler:material-spinner:1.0.9'
-    compile 'gr.pantrif:easy-android-splash-screen:0.0.1'
 
 }

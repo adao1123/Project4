@@ -29,18 +29,24 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
     private static final String TAG = "TEA SHOP ADAPTER";
     private List<Business> mTeaShops;
     private final OnTeaShopClickListener listener;
+    private final OnEndOfListListener endOfListListener;
     private Context context;
     private double latitude,longitude;
 
-    public TeaShopAdapter(List<Business> mTeaShops, OnTeaShopClickListener listener, double latitude, double longitude) {
+    public TeaShopAdapter(List<Business> mTeaShops, OnTeaShopClickListener listener, OnEndOfListListener onEndOfListListener, double latitude, double longitude) {
         this.mTeaShops = mTeaShops;
         this.listener = listener;
+        this.endOfListListener = onEndOfListListener;
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
     public interface OnTeaShopClickListener{
         void onTeaShopClick(Business teaShop);
+    }
+
+    public interface OnEndOfListListener{
+        void onEndOfList(int position);
     }
 
     @Override
@@ -59,12 +65,16 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
         TextView titleTV = holder.titleTV;
         TextView addressTV = holder.addressTV;
         TextView distanceTV = holder.distanceTV;
-        double distance = Math.round(getDistance(latitude,longitude,teaShop.location().coordinate().latitude(),teaShop.location().coordinate().longitude()) * 100.0) / 100.0;
+        double distance = Math.round(getDistance(latitude,longitude,
+                teaShop.location().coordinate().latitude(),
+                teaShop.location().coordinate().longitude()) * 100.0) / 100.0;
         distanceTV.setText(distance+"m");
+        if (latitude==0)distanceTV.setText("");
         ImageView teaIV = holder.teaIV;
         ImageView ratingIV = holder.ratingIV;
         titleTV.setText(teaShop.name());
-        addressTV.setText(teaShop.location().displayAddress().toString());
+        String address = teaShop.location().displayAddress().toString();
+        addressTV.setText(address.substring(1,address.length()-1));
         Picasso.with(context)
                 .load(teaShop.imageUrl().replaceAll("ms", "348s"))
                 .into(teaIV);
@@ -72,7 +82,14 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
                 .load(teaShop.ratingImgUrlLarge())
                 .into(ratingIV);
         holder.bind(mTeaShops.get(position), listener);
+        if (position==mTeaShops.size()-3){
+            endOfListListener.onEndOfList(position);
+        }
+    }
 
+    public void setLocation(double lat, double lon){
+        latitude=lat;
+        longitude=lon;
     }
 
     @Override
@@ -113,7 +130,9 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
                 Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
                         Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2));
         float c = (float) (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-        return R * c/1609.34;//return miles
+        double miles = R *c/1609.34;
+        Log.i(TAG, "getDistance: miles"+miles);
+        return miles;//return miles
     }
     private static float toRad(double value) {
         return (float) (value * Math.PI / 180); //made this as a float alternative to Math.toRadians

@@ -1,31 +1,47 @@
 package com.example.ratemyboba.activities;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Typeface;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 
 import com.example.ratemyboba.R;
 
-import gr.net.maroulis.library.EasySplashScreen;
-
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends Activity {
+    private static boolean splashLoaded = false;
+    private TextView textView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_splash);
-        View easySplashScreenView = new EasySplashScreen(SplashActivity.this)
-                .withFullScreen()
-                .withTargetActivity(FacebookActivity.class)
-                .withSplashTimeOut(3000)
-                .withBackgroundResource(R.color.colorPrimary)
-                .withHeaderText("Rate My Boba")
-                .withFooterText("Find your fix")
-                .withBeforeLogoText("My cool company")
-                .withLogo(R.drawable.ic_star_black)
-                .withAfterLogoText("Some more details")
-                .create();
+        if (!splashLoaded) {
+            setContentView(R.layout.activity_splash);
+            int secondsDelayed = 1;
+            setFont();
 
-        setContentView(easySplashScreenView);
+            new Handler().postDelayed(new Runnable() {
+                public void run() {
+                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                    finish();
+                }
+            }, secondsDelayed * 1000);
+
+            splashLoaded = true;
+        }
+        else {
+            Intent goToMainActivity = new Intent(SplashActivity.this, MainActivity.class);
+            goToMainActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(goToMainActivity);
+            finish();
+        }
+    }
+    private void setFont(){
+        textView = (TextView)findViewById(R.id.appName_TV_ID);
+        Typeface typeface = Typeface.createFromAsset(getAssets(), "Amatic_Bold.ttf");
+        textView.setTypeface(typeface);
     }
 }
