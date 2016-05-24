@@ -111,15 +111,12 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaShopList = new ArrayList<>();
         fillTempList(); //TEMP/PLACEHOLDER
         setDistanceSpinner();
-        locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if (addressET.getText().toString().matches("")) {
+            if (checkLocationOn()) getLocation();
+        }
         setRV();
-//        setTeaRV();
-//        setTeaShopRV();
-//        teaRV.setAdapter(teaAdapter);
         teaRV.setAdapter(teaShopAdapter);
-        if (checkLocationOn()) getLocation();
         setYelpApi('d');
-
         setFabListener();
         useLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,38 +154,13 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 
     private void setRV(){
         teaAdapter = new TeaAdapter(teaList,this);
-        if (checkLocationOn()) getLocation();
+//        if (checkLocationOn()) getLocation();
         teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
         teaRV.setLayoutManager(gridLayoutManager);
         RV_Space_Decoration decoration = new RV_Space_Decoration(14);
         teaRV.addItemDecoration(decoration);
     }
-
-//    private void setTeaRV(){
-//        fillTempList();
-//        teaAdapter = new TeaAdapter(teaList,this);
-//        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
-//        teaRV.setLayoutManager(gridLayoutManager);
-//        RV_Space_Decoration decoration = new RV_Space_Decoration(16);
-//        teaRV.addItemDecoration(decoration);
-//    }
-//
-//    private void setTeaShopRV(){
-//        teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
-//        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
-//        teaRV.setLayoutManager(gridLayoutManager);
-//        RV_Space_Decoration decoration = new RV_Space_Decoration(14);
-//        teaRV.addItemDecoration(decoration);
-//    }
-
-//    private void initFirebase(){
-//        Firebase firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
-//        Firebase firebaseChildShop = firebaseRef.child("Shops").child("i-tea-san-francisco-3");
-//        if (firebaseChildShop!=null) {
-//
-//        }
-//    }
 
     private double[] getCoorfromAddress(String address){
         Geocoder geocoder = new Geocoder(getContext());
@@ -319,7 +291,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             @Override
             public void onClick(View v) {
                 teaRV.setAdapter(teaShopAdapter);
-                if (checkLocationOn()) getLocation();
+                if (addressET.getText().toString().matches("")) {
+                    if (checkLocationOn()) getLocation();
+                }
                 setYelpApi('d');
                 fabMenu.close(true);
 
@@ -329,7 +303,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             @Override
             public void onClick(View v) {
                 teaRV.setAdapter(teaShopAdapter);
-                if (checkLocationOn())getLocation();
+                if (addressET.getText().toString().matches("")) {
+                    if (checkLocationOn()) getLocation();
+                }
                 setYelpApi('r');
                 fabMenu.close(true);
             }
@@ -338,7 +314,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             @Override
             public void onClick(View v) {
                 teaRV.setAdapter(teaShopAdapter);
-                if (checkLocationOn()) getLocation();
+                if (addressET.getText().toString().matches("")) {
+                    if (checkLocationOn()) getLocation();
+                }
                 setYelpApi('$');
                 fabMenu.close(true);
             }
@@ -368,6 +346,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             String locationProvider = LocationManager.NETWORK_PROVIDER;
             Location lastKnownLocation;
             try {
+                locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
                 lastKnownLocation= locationManager.getLastKnownLocation(locationProvider);
                 if (lastKnownLocation!=null) {
                     Log.i(TAG, "getLocation: Lat: " + lastKnownLocation.getLatitude());
@@ -376,10 +355,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
                     longitude = lastKnownLocation.getLongitude();
                     location[0] = lastKnownLocation.getLatitude();
                     location[1] = lastKnownLocation.getLongitude();
-                    Log.i(TAG, "getLocation: latitude "+latitude);
-                    Log.i(TAG, "getLocation: longitude "+longitude);
-                    Log.i(TAG, "getLocation: latitude "+location[0]);
-                    Log.i(TAG, "getLocation: longitude "+location[1]);
+                    if (teaShopAdapter!=null)teaShopAdapter.setLocation(latitude,longitude);
                 }else Toast.makeText(getContext(),"Acquiring Location",Toast.LENGTH_LONG).show();
             }catch (SecurityException e) {
                 Toast.makeText(getContext(), "You need to grant location permission", Toast.LENGTH_SHORT).show();
@@ -430,7 +406,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
             //All location services are disabled
-            Toast.makeText(getContext(),"Please Enable Location",Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(),"Please Enable Location or Enter Address",Toast.LENGTH_LONG).show();
             return false;
         }
         return true;

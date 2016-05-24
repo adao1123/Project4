@@ -59,15 +59,16 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
         TextView titleTV = holder.titleTV;
         TextView addressTV = holder.addressTV;
         TextView distanceTV = holder.distanceTV;
-        Log.i(TAG, "onBindViewHolder: ");
-        Log.i(TAG, "onBindViewHolder: Latitude "+latitude);
-        Log.i(TAG, "onBindViewHolder: Longitude "+longitude);
-        double distance = Math.round(getDistance(latitude,longitude,teaShop.location().coordinate().latitude(),teaShop.location().coordinate().longitude()) * 100.0) / 100.0;
+        double distance = Math.round(getDistance(latitude,longitude,
+                teaShop.location().coordinate().latitude(),
+                teaShop.location().coordinate().longitude()) * 100.0) / 100.0;
         distanceTV.setText(distance+"m");
+        if (latitude==0)distanceTV.setText("");
         ImageView teaIV = holder.teaIV;
         ImageView ratingIV = holder.ratingIV;
         titleTV.setText(teaShop.name());
-        addressTV.setText(teaShop.location().displayAddress().toString());
+        String address = teaShop.location().displayAddress().toString();
+        addressTV.setText(address.substring(1,address.length()-1));
         Picasso.with(context)
                 .load(teaShop.imageUrl().replaceAll("ms", "348s"))
                 .into(teaIV);
@@ -76,6 +77,11 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
                 .into(ratingIV);
         holder.bind(mTeaShops.get(position), listener);
 
+    }
+
+    public void setLocation(double lat, double lon){
+        latitude=lat;
+        longitude=lon;
     }
 
     @Override
