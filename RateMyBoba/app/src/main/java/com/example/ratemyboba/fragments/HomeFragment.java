@@ -58,7 +58,7 @@ import retrofit2.Response;
 /**
  * Created by adao1 on 5/1/2016.
  */
-public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener, TeaShopAdapter.OnTeaShopClickListener{
+public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener, TeaShopAdapter.OnTeaShopClickListener, TeaShopAdapter.OnEndOfListListener{
 
     public static final String DETAIL_KEY = "DETAILKEY";
     private static final int PERMISSION_REQUEST_CODE = 12;
@@ -84,6 +84,8 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     FloatingActionMenu fabMenu;
     Button useLocationButton;
     LinearLayout enterLocationLayout;
+    private char current;
+    private boolean isSameSearch=false;
 
     @Nullable
     @Override
@@ -116,7 +118,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         }
         setRV();
         teaRV.setAdapter(teaShopAdapter);
-        setYelpApi('d');
+        setYelpApi('d',0);
         setFabListener();
         useLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,7 +133,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         withinDistanceSpinner.setOnItemSelectedListener(new MaterialSpinner.OnItemSelectedListener<String>() {
             @Override
             public void onItemSelected(MaterialSpinner view, int position, long id, String item) {
-                switch (position){
+                switch (position) {
                     case 0:
                         withinDistance = 8050; // 5 miles to meters
                         break;
@@ -155,7 +157,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     private void setRV(){
         teaAdapter = new TeaAdapter(teaList,this);
 //        if (checkLocationOn()) getLocation();
-        teaShopAdapter = new TeaShopAdapter(teaShopList,this,latitude,longitude);
+        teaShopAdapter = new TeaShopAdapter(teaShopList,this,this,latitude,longitude);
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(),2);
         teaRV.setLayoutManager(gridLayoutManager);
         RV_Space_Decoration decoration = new RV_Space_Decoration(14);
@@ -177,8 +179,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         return result;
     }
 
-    private void setYelpApi(final char c){
+    private void setYelpApi(final char c,int offset){
         Log.i(TAG, "setYelpApi: inside");
+        current = c;
         YelpAPIFactory yelpAPIFactory = new YelpAPIFactory(
                 getString(R.string.YELP_CONSUMER_KEY), getString(R.string.YELP_CONSUMER_SECRET),
                 getString(R.string.YELP_TOKEN_KEY),getString(R.string.YELP_TOKEN_SECRET));
@@ -188,6 +191,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 //        params.put("term", "Boba");
 
         params.put("limit","20");
+        params.put("offset",offset+"");
         params.put("radius_filter",withinDistance+"");
         if (c == 'r') params.put("sort","2");
         else params.put("sort","1");
@@ -209,16 +213,14 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
                 ArrayList<Business> responseList = response.body().businesses();
                 if (c == '$' && responseList.size()==0)Toast.makeText(getContext(),"No Deals :(",Toast.LENGTH_LONG).show();
-                teaShopList.clear();
+                if (teaShopList.size()==0)isSameSearch=false;
+                else isSameSearch=true;
                 teaShopList.addAll(responseList);
-                Log.d(TAG, "onResponse: Lat & Long" + latitude + longitude);
-                for (Business teaShop : teaShopList) {
-                    Log.i(TAG, "onResponse: " + teaShop.name());
-//                    Log.i(TAG, "onResponse: " + teaShop.deals().get(0).title());
+                if (!isSameSearch) teaShopAdapter.notifyDataSetChanged();
+                else {
+                    int currentSize = teaShopAdapter.getItemCount();
+                    teaShopAdapter.notifyItemRangeInserted(currentSize, teaShopList.size());
                 }
-                teaShopAdapter.notifyDataSetChanged();
-                //setTeaShopRV();
-                //teaShopAdapter.notifyItemRangeInserted(0,teaShopList.size()-1);
             }
 
             @Override
@@ -227,12 +229,6 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
                 t.printStackTrace();
             }
         });
-    }
-
-    private void fillList(){
-        for (int i = 1; i <= 25; i++){
-            teaList.add(new Tea("Boba " + i));
-        }
     }
 
     private void fillTempList(){
@@ -246,6 +242,11 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         teaList.add(new Tea("Almond Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Almond.jpg"));
         teaList.add(new Tea("Jasmine Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Jasmine.jpg"));
         teaList.add(new Tea("Honey Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Honey.jpg"));
+    }
+
+    @Override
+    public void onEndOfList(int position) {
+        setYelpApi(current,position+3);
     }
 
     public interface OnBobaFabClickListener {
@@ -291,11 +292,12 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         distanceFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                teaShopList.clear();
                 teaRV.setAdapter(teaShopAdapter);
                 if (addressET.getText().toString().matches("")) {
                     if (checkLocationOn()) getLocation();
                 }
-                setYelpApi('d');
+                setYelpApi('d',0);
                 fabMenu.close(true);
 
             }
@@ -303,22 +305,24 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         ratingsFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                teaShopList.clear();
                 teaRV.setAdapter(teaShopAdapter);
                 if (addressET.getText().toString().matches("")) {
                     if (checkLocationOn()) getLocation();
                 }
-                setYelpApi('r');
+                setYelpApi('r',0);
                 fabMenu.close(true);
             }
         });
         dealsFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                teaShopList.clear();
                 teaRV.setAdapter(teaShopAdapter);
                 if (addressET.getText().toString().matches("")) {
                     if (checkLocationOn()) getLocation();
                 }
-                setYelpApi('$');
+                setYelpApi('$',0);
                 fabMenu.close(true);
             }
         });

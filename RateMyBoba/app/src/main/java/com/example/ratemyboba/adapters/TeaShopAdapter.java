@@ -29,18 +29,24 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
     private static final String TAG = "TEA SHOP ADAPTER";
     private List<Business> mTeaShops;
     private final OnTeaShopClickListener listener;
+    private final OnEndOfListListener endOfListListener;
     private Context context;
     private double latitude,longitude;
 
-    public TeaShopAdapter(List<Business> mTeaShops, OnTeaShopClickListener listener, double latitude, double longitude) {
+    public TeaShopAdapter(List<Business> mTeaShops, OnTeaShopClickListener listener, OnEndOfListListener onEndOfListListener, double latitude, double longitude) {
         this.mTeaShops = mTeaShops;
         this.listener = listener;
+        this.endOfListListener = onEndOfListListener;
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
     public interface OnTeaShopClickListener{
         void onTeaShopClick(Business teaShop);
+    }
+
+    public interface OnEndOfListListener{
+        void onEndOfList(int position);
     }
 
     @Override
@@ -76,7 +82,9 @@ public class TeaShopAdapter extends RecyclerView.Adapter<TeaShopAdapter.ViewHold
                 .load(teaShop.ratingImgUrlLarge())
                 .into(ratingIV);
         holder.bind(mTeaShops.get(position), listener);
-
+        if (position==mTeaShops.size()-3){
+            endOfListListener.onEndOfList(position);
+        }
     }
 
     public void setLocation(double lat, double lon){
