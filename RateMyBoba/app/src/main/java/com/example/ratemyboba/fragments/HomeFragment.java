@@ -19,11 +19,13 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -118,8 +120,9 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         }
         setRV();
         teaRV.setAdapter(teaShopAdapter);
-        setYelpApi('d',0);
+        setYelpApi('d', 0);
         setFabListener();
+        setEnterListener();
         useLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -247,6 +250,26 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     @Override
     public void onEndOfList(int position) {
         setYelpApi(current,position+3);
+    }
+
+    private void setEnterListener(){
+        addressET.setOnKeyListener(new View.OnKeyListener() {
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    teaShopList.clear();
+                    teaRV.setAdapter(teaShopAdapter);
+                    if (addressET.getText().toString().matches("")) {
+                        if (checkLocationOn()) getLocation();
+                    }
+                    setYelpApi('d',0);
+                    fabMenu.close(true);
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(addressET.getWindowToken(), 0);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     public interface OnBobaFabClickListener {
