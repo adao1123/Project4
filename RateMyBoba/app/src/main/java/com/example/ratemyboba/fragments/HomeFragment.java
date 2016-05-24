@@ -177,7 +177,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         return result;
     }
 
-    private void setYelpApi(char c){
+    private void setYelpApi(final char c){
         Log.i(TAG, "setYelpApi: inside");
         YelpAPIFactory yelpAPIFactory = new YelpAPIFactory(
                 getString(R.string.YELP_CONSUMER_KEY), getString(R.string.YELP_CONSUMER_SECRET),
@@ -208,6 +208,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
             @Override
             public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
                 ArrayList<Business> responseList = response.body().businesses();
+                if (c == '$' && responseList.size()==0)Toast.makeText(getContext(),"No Deals :(",Toast.LENGTH_LONG).show();
                 teaShopList.clear();
                 teaShopList.addAll(responseList);
                 Log.d(TAG, "onResponse: Lat & Long" + latitude + longitude);

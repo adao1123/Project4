@@ -2,6 +2,7 @@ package com.example.ratemyboba.view_holders;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.ratemyboba.R;
@@ -15,11 +16,13 @@ public class ReviewsViewHolder extends RecyclerView.ViewHolder {
     public TextView reviewUserTV;
     public TextView reviewBodyTV;
     public TextView reviewRatingTV;
+    public ImageView reviewUserIV;
 
     public ReviewsViewHolder(View itemView) {
         super(itemView);
         reviewUserTV = (TextView)itemView.findViewById(R.id.rv_review_user);
         reviewBodyTV = (TextView) itemView.findViewById(R.id.rv_review_body);
         reviewRatingTV = (TextView)itemView.findViewById(R.id.rv_review_rating);
+        reviewUserIV = (ImageView)itemView.findViewById(R.id.rv_review_user_image);
     }
 }

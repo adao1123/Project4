@@ -48,6 +48,11 @@ import com.yelp.clientlib.entities.Deal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 import retrofit2.Call;
@@ -90,7 +95,9 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     private ArrayList<Tea> teaList;
     private String teaID;
     private String userName;
-    private int rating = 0;
+    private String userImage;
+    private double rating = 0;
+    private boolean haveVoted = false;
 
 
     @Override
@@ -200,10 +207,10 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
      */
     private void displayViews(){
         titleTV.setText(teaShop.name());
-        loadImagePicasso(shopIV,teaShop.imageUrl().replaceAll("ms", "o"));
-        phoneTV.setText(teaShop.displayPhone());
+        loadImagePicasso(shopIV, teaShop.imageUrl().replaceAll("ms", "o"));
+        if (teaShop.displayPhone()!=null)phoneTV.setText(teaShop.displayPhone().substring(3,teaShop.displayPhone().length()));
         setOpenStatusTV();
-        loadImagePicasso(ratingIV,teaShop.ratingImgUrlLarge());
+        loadImagePicasso(ratingIV, teaShop.ratingImgUrlLarge());
         setDealsTV();
     }
 
@@ -215,6 +222,10 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         takePhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (makeTeaNameET.getText().toString().matches("")) {
+                    Toast.makeText(ShopActivity.this, "Enter Tea Name", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 verifyStoragePermissions(ShopActivity.this);
             }
         });
@@ -226,7 +237,8 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
      * @param imageUrl
      */
     private void loadImagePicasso(ImageView imageView, String imageUrl){
-        Picasso.with(this).load(imageUrl).into(imageView);
+        if (imageView==ratingIV) Picasso.with(this).load(imageUrl).resize(600,100).into(imageView);
+        else Picasso.with(this).load(imageUrl).into(imageView);
     }
 
     /**
@@ -267,6 +279,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             @Override
             public void onClick(View v) {
                 String uri = "tel:" + teaShop.phone();
+//                if (Intent.ACTION_DIAL==null)return;
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse(uri));
                 startActivity(intent);
@@ -290,7 +303,9 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         authData = firebaseRef.getAuth();
 //        String userID = authData.getUid();
         userName = (String) authData.getProviderData().get("displayName");
+        userImage = (String) authData.getProviderData().get("profileImageURL");
         Log.i(TAG, "initFirebase: PRINT NAME " + userName);
+        Log.i(TAG, "initFirebase: PRINT Image " + userImage);
         return userName;
     }
 
@@ -315,7 +330,11 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         firebaseReviews.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Review review = new Review(teaShop.reviews().get(0).user().name(), teaShop.reviews().get(0).excerpt(), teaShop.reviews().get(0).rating() + "");
+                Review review = new Review(teaShop.reviews().get(0).user().name(),
+                        teaShop.reviews().get(0).user().imageUrl().replaceAll("ms", "ls"),
+                        teaShop.reviews().get(0).excerpt(),
+                        teaShop.reviews().get(0).rating() + "");
+                Log.i(TAG, "onDataChange: " + teaShop.reviews().get(0).user().imageUrl());
                 if (!dataSnapshot.hasChildren()) firebaseReviews.push().setValue(review);
             }
 
@@ -408,10 +427,12 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         voteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (haveVoted) return;
                 if (c == '+') tea.setNumUp(tea.getNumUp() + 1);
                 else if (c == '-') tea.setNumDown(tea.getNumDown() + 1);
                 tea.setPoints(tea.getNumDown() - tea.getNumUp());
                 firebaseTeas.child(tea.getTitle()).setValue(tea);
+                haveVoted = true;
             }
         });
 
@@ -438,7 +459,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         ratingView.setOnStarClickListener(new RatingView.OnStarClickListener() {
             @Override
             public void onClick(int i) {
-                rating = i;
+                rating = (double) i;
             }
         });
     }
@@ -456,7 +477,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
                     Toast.makeText(ShopActivity.this, "Click on Stars to Rate", Toast.LENGTH_LONG).show();
                     return;
                 }
-                Review review = new Review(userName, reviewBodyET.getText().toString(), rating + "");
+                Review review = new Review(userName, userImage, reviewBodyET.getText().toString(), rating + "");
                 firebaseReviews.push().setValue(review);
                 reviewBodyET.getText().clear();
             }
@@ -485,6 +506,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
                 reviewsViewHolder.reviewUserTV.setText(review.getUser());
                 reviewsViewHolder.reviewBodyTV.setText(review.getText());
                 reviewsViewHolder.reviewRatingTV.setText(review.getRating());
+                Picasso.with(ShopActivity.this).load(review.getUserImage()).resize(250,250).into(reviewsViewHolder.reviewUserIV);
             }
         };
     }
@@ -536,7 +558,10 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         options.inSampleSize = 8; // shrink it down otherwise we will use stupid amounts of memory
         Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        Bitmap mutableBitmap = convertToMutable(bitmap);
+        mutableBitmap.setWidth(1);
+        mutableBitmap.setHeight(1);
+        mutableBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] bytes = baos.toByteArray();
         String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
         firebaseTeas.child(makeTeaNameET.getText().toString()).setValue(new Tea(makeTeaNameET.getText().toString(),base64Image));
@@ -544,6 +569,59 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
 //         we finally have our base64 string version of the image, save it.
 //        firebaseTeas.child().setValue(base64Image);
         System.out.println("Stored image with length: " + bytes.length);
+    }
+
+    /**
+     * Converts a immutable bitmap to a mutable bitmap. This operation doesn't allocates
+     * more memory that there is already allocated.
+     *
+     * @param imgIn - Source image. It will be released, and should not be used more
+     * @return a copy of imgIn, but muttable.
+     */
+    public static Bitmap convertToMutable(Bitmap imgIn) {
+        try {
+            //this is the file going to use temporally to save the bytes.
+            // This file will not be a image, it will store the raw image data.
+            File file = new File(Environment.getExternalStorageDirectory() + File.separator + "temp.tmp");
+
+            //Open an RandomAccessFile
+            //Make sure you have added uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+            //into AndroidManifest.xml file
+            RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+
+            // get the width and height of the source bitmap.
+            int width = imgIn.getWidth();
+            int height = imgIn.getHeight();
+            Bitmap.Config type = imgIn.getConfig();
+
+            //Copy the byte to the file
+            //Assume source bitmap loaded using options.inPreferredConfig = Config.ARGB_8888;
+            FileChannel channel = randomAccessFile.getChannel();
+            MappedByteBuffer map = channel.map(FileChannel.MapMode.READ_WRITE, 0, imgIn.getRowBytes()*height);
+            imgIn.copyPixelsToBuffer(map);
+            //recycle the source bitmap, this will be no longer used.
+            imgIn.recycle();
+            System.gc();// try to force the bytes from the imgIn to be released
+
+            //Create a new bitmap to load the bitmap again. Probably the memory will be available.
+            imgIn = Bitmap.createBitmap(width, height, type);
+            map.position(0);
+            //load it back from temporary
+            imgIn.copyPixelsFromBuffer(map);
+            //close the temporary file and channel , then delete that also
+            channel.close();
+            randomAccessFile.close();
+
+            // delete the temp file
+            file.delete();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return imgIn;
     }
 
 }

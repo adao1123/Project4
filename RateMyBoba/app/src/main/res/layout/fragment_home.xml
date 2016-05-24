@@ -47,7 +47,6 @@
                 android:paddingBottom="10dp"
                 android:paddingLeft="10dp"
                 android:hint="Current Location"
-                android:textColor="@color/colorPrimaryDark"
                 android:background="#d3d3d3"
                 />
             <Button

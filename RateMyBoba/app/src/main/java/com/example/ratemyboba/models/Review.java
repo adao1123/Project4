@@ -5,12 +5,14 @@ package com.example.ratemyboba.models;
  */
 public class Review {
     private String user;
+    private String userImage;
     private String text;
     private String rating;
     private String ratingImgUrl;
 
-    public Review(String user, String text, String rating) {
+    public Review(String user, String userImage, String text, String rating) {
         this.user = user;
+        this.userImage = userImage;
         this.text = text;
         this.rating = rating;
     }
@@ -24,6 +26,14 @@ public class Review {
 
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public String getUserImage() {
+        return userImage;
+    }
+
+    public void setUserImage(String userImage) {
+        this.userImage = userImage;
     }
 
     public String getText() {
