@@ -11,15 +11,16 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.ratemyboba.activities.SplashActivity">
     <TextView
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:textStyle="bold"
-        android:textSize="35sp"
+        android:textSize="75sp"
         android:padding="20dp"
         android:textColor="@color/colorPrimary"
         android:text="@string/app_name"
-        android:id="@+id/textView"
+        android:id="@+id/appName_TV_ID"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_marginTop="95dp" />
@@ -29,8 +30,8 @@
         android:layout_width="250dp"
         android:layout_height="250dp"
         android:src="@drawable/bobaicon"
-        android:layout_marginTop="42dp"
-        android:layout_below="@+id/textView"
+        android:layout_marginTop="25dp"
+        android:layout_below="@+id/appName_TV_ID"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
