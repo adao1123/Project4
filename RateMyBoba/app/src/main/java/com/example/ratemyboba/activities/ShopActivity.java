@@ -2,6 +2,7 @@ package com.example.ratemyboba.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -15,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -279,7 +281,8 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
             @Override
             public void onClick(View v) {
                 String uri = "tel:" + teaShop.phone();
-//                if (Intent.ACTION_DIAL==null)return;
+                if (((TelephonyManager) ShopActivity.this.getSystemService(Context.TELEPHONY_SERVICE)).getPhoneType()
+                        == TelephonyManager.PHONE_TYPE_NONE) return;
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse(uri));
                 startActivity(intent);
@@ -301,7 +304,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
      */
     private String getFirebaseAuth(){
         authData = firebaseRef.getAuth();
-//        String userID = authData.getUid();
+        String userID = authData.getUid();
         userName = (String) authData.getProviderData().get("displayName");
         userImage = (String) authData.getProviderData().get("profileImageURL");
         Log.i(TAG, "initFirebase: PRINT NAME " + userName);

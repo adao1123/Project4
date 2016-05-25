@@ -12,17 +12,13 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -37,7 +33,6 @@ import com.example.ratemyboba.adapters.TeaAdapter;
 import com.example.ratemyboba.adapters.TeaShopAdapter;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.RV_Space_Decoration;
-import com.firebase.client.Firebase;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.jaredrummler.materialspinner.MaterialSpinner;
@@ -62,48 +57,47 @@ import retrofit2.Response;
  */
 public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListener, TeaShopAdapter.OnTeaShopClickListener, TeaShopAdapter.OnEndOfListListener{
 
+    private static final String TAG = "HOME FRAGMENT";
     public static final String DETAIL_KEY = "DETAILKEY";
     private static final int PERMISSION_REQUEST_CODE = 12;
-    private static final String TAG = "HOME FRAGMENT";
-    List<Tea> teaList;
-    PassClickedTeaListener teaListener;
-    OnBobaFabClickListener bobaFabListener;
-    FloatingActionButton bobaFab;
-    FloatingActionButton distanceFab;
-    FloatingActionButton ratingsFab;
-    FloatingActionButton dealsFab;
-    CardView locationCard;
-    private ArrayList<Business> teaShopList;
+    private EditText addressET;
+    private Button useLocationButton;
+    private CardView locationCard;
     private RecyclerView teaRV;
+    private FloatingActionButton bobaFab;
+    private FloatingActionButton distanceFab;
+    private FloatingActionButton ratingsFab;
+    private FloatingActionButton dealsFab;
+    private FloatingActionMenu fabMenu;
+    private MaterialSpinner withinDistanceSpinner;
+    private LinearLayout enterLocationLayout;
+    private List<Tea> teaList;
+    private ArrayList<Business> teaShopList;
     private TeaShopAdapter teaShopAdapter;
+    private TeaAdapter teaAdapter;
+    private PassClickedTeaListener teaListener;
+    private OnBobaFabClickListener bobaFabListener;
+    private LocationManager locationManager;
+    private boolean isSameSearch=false;
+    private char current;
     private double latitude;
     private double longitude;
     private double withinDistance = 16100; //default within 10 miles
-    private LocationManager locationManager;
-    TeaAdapter teaAdapter;
-    MaterialSpinner withinDistanceSpinner;
-    EditText addressET;
-    FloatingActionMenu fabMenu;
-    Button useLocationButton;
-    LinearLayout enterLocationLayout;
-    private char current;
-    private boolean isSameSearch=false;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home,container,false);
+        addressET = (EditText)view.findViewById(R.id.shop_address_et_id);
+        useLocationButton = (Button)view.findViewById(R.id.shop_address_clear);
+        locationCard = (CardView)view.findViewById(R.id.home_address_cardview);
         teaRV = (RecyclerView)view.findViewById(R.id.home_RV_id);
-//        bobaFab = (FloatingActionButton)view.findViewById(R.id.home_fab_boba_id);
         distanceFab = (FloatingActionButton)view.findViewById(R.id.home_fab_distance_id);
         ratingsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_rating_id);
         dealsFab = (FloatingActionButton)view.findViewById(R.id.home_fab_deals_id);
-        withinDistanceSpinner = (MaterialSpinner) view.findViewById(R.id.shop_spinner);
-        addressET = (EditText)view.findViewById(R.id.shop_address_et_id);
         fabMenu = (FloatingActionMenu)view.findViewById(R.id.shop_fab_menu);
-        useLocationButton = (Button)view.findViewById(R.id.shop_address_clear);
+        withinDistanceSpinner = (MaterialSpinner) view.findViewById(R.id.shop_spinner);
         enterLocationLayout = (LinearLayout)view.findViewById(R.id.shop_enter_location_id);
-        locationCard = (CardView)view.findViewById(R.id.home_address_cardview);
         return view;
     }
 
@@ -113,7 +107,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
 
         teaList = new ArrayList<>();
         teaShopList = new ArrayList<>();
-        fillTempList(); //TEMP/PLACEHOLDER
+        addPlaceholderTeas(); //TEMP/PLACEHOLDER
         setDistanceSpinner();
         if (addressET.getText().toString().matches("")) {
             if (checkLocationOn()) getLocation();
@@ -234,11 +228,7 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
         });
     }
 
-    private void fillTempList(){
-//        for (int i = 0; i<25; i++){
-//            teaList.add(new Tea("Boba Tea " + i));
-//            firebaseTeas.push().setValue(new Tea("Boba Tea " + i));
-//        }
+    private void addPlaceholderTeas(){
         teaList.add(new Tea("Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Milk-Tea.jpg"));
         teaList.add(new Tea("Taro Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Taro1.jpg"));
         teaList.add(new Tea("Oolong Milk Tea", "http://www.tapiocaexpress.com/wp-content/uploads/2014/06/Oolong-Green.jpg"));
@@ -299,7 +289,6 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
                     locationCard.setVisibility(View.INVISIBLE);
                     withinDistanceSpinner.setVisibility(View.INVISIBLE);
                 }
-
                 Log.i(TAG, "onMenuToggle: ");
             }
         });
@@ -396,22 +385,13 @@ public class HomeFragment extends Fragment implements TeaAdapter.OnTeaClickListe
     }
 
 
-
-//    @Override
-//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-//        inflater.inflate(R.menu.menu_search, menu);
-//        super.onCreateOptionsMenu(menu, inflater);
-//    }
-
     @TargetApi(23)
     private boolean permissionExists(){
         int currentApiVersion = android.os.Build.VERSION.SDK_INT;
         if (currentApiVersion < Build.VERSION_CODES.M){
-
             // Permissions are already granted during INSTALL TIME for older OS version
             return true;
         }
-
         int granted = getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
         if (granted == PackageManager.PERMISSION_GRANTED){
             return true;
