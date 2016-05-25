@@ -3,6 +3,7 @@ package com.example.ratemyboba.activities;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -13,7 +14,11 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 
@@ -22,6 +27,9 @@ import com.example.ratemyboba.fragments.BobaFragment;
 import com.example.ratemyboba.fragments.HomeFragment;
 import com.example.ratemyboba.models.Tea;
 import com.example.ratemyboba.util.UserLocationListener;
+import com.facebook.login.LoginManager;
+import com.firebase.client.AuthData;
+import com.firebase.client.Firebase;
 
 public class MainActivity extends AppCompatActivity implements
         HomeFragment.PassClickedTeaListener,
@@ -42,8 +50,36 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar_ID);
+        setSupportActionBar(toolbar);
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         setFragmentManager();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_login,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_logout:
+                Firebase firebaseRef = new Firebase("https://rate-my-boba.firebaseio.com/");
+                AuthData authData = firebaseRef.getAuth();
+                if (authData != null) {
+                    firebaseRef.unauth();
+                    LoginManager.getInstance().logOut();
+//                    setAuthenticatedUser(null);
+                    Intent loginIntent = new Intent(MainActivity.this,FacebookActivity.class);
+                    startActivity(loginIntent);
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -214,6 +250,6 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed() {
-//        super.onBackPressed();
+        super.onBackPressed();
     }
 }

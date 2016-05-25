@@ -25,7 +25,7 @@ public class SplashActivity extends Activity {
 
             new Handler().postDelayed(new Runnable() {
                 public void run() {
-                    startActivity(new Intent(SplashActivity.this, MainActivity.class));
+                    startActivity(new Intent(SplashActivity.this, FacebookActivity.class));
                     finish();
                 }
             }, secondsDelayed * 1000);
@@ -33,9 +33,9 @@ public class SplashActivity extends Activity {
             splashLoaded = true;
         }
         else {
-            Intent goToMainActivity = new Intent(SplashActivity.this, MainActivity.class);
-            goToMainActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            startActivity(goToMainActivity);
+            Intent goToFacebookActivity = new Intent(SplashActivity.this, FacebookActivity.class);
+            goToFacebookActivity.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            startActivity(goToFacebookActivity);
             finish();
         }
     }
