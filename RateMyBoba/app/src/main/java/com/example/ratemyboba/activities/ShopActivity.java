@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -393,7 +394,9 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     private void setTeaRVImages(Tea tea,ImageView imageView){
         if (!tea.getImageUrl().contains("http")){
             byte[] imageAsBytes = Base64.decode(tea.getImageUrl().getBytes(), Base64.DEFAULT);
-            imageView.setImageBitmap(BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length));
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes,0,imageAsBytes.length);
+            Bitmap rotatedBitmap = RotateBitmap(bitmap,90);
+            imageView.setImageBitmap(Bitmap.createScaledBitmap(rotatedBitmap,750,1000,false));
         }else {
             loadImagePicasso(imageView,tea.getImageUrl());
         }
@@ -562,8 +565,8 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
         Bitmap bitmap = BitmapFactory.decodeFile(imageUri.getPath(), options);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Bitmap mutableBitmap = convertToMutable(bitmap);
-        mutableBitmap.setWidth(1);
-        mutableBitmap.setHeight(1);
+//        mutableBitmap.setWidth(1);
+//        mutableBitmap.setHeight(1);
         mutableBitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] bytes = baos.toByteArray();
         String base64Image = Base64.encodeToString(bytes, Base64.DEFAULT);
@@ -572,6 +575,19 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
 //         we finally have our base64 string version of the image, save it.
 //        firebaseTeas.child().setValue(base64Image);
         System.out.println("Stored image with length: " + bytes.length);
+    }
+
+    /**
+     * Rotates bitmap
+     * @param source
+     * @param angle
+     * @return
+     */
+    public static Bitmap RotateBitmap(Bitmap source, float angle)
+    {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
     /**
