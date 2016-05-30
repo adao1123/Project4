@@ -1,4 +1,4 @@
-package com.example.ratemyboba.activities;
+package com.dao.ratemyboba.activities;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.example.ratemyboba.R;
+import com.dao.ratemyboba.R;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;

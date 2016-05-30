@@ -1,11 +1,11 @@
-package com.example.ratemyboba.view_holders;
+package com.dao.ratemyboba.view_holders;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.ratemyboba.R;
+import com.dao.ratemyboba.R;
 
 /**
  * Created by adao1 on 5/23/2016.

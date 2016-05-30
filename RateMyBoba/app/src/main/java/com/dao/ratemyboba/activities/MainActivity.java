@@ -1,4 +1,4 @@
-package com.example.ratemyboba.activities;
+package com.dao.ratemyboba.activities;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -8,10 +8,8 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -22,11 +20,11 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
-import com.example.ratemyboba.R;
-import com.example.ratemyboba.fragments.BobaFragment;
-import com.example.ratemyboba.fragments.HomeFragment;
-import com.example.ratemyboba.models.Tea;
-import com.example.ratemyboba.util.UserLocationListener;
+import com.dao.ratemyboba.R;
+import com.dao.ratemyboba.fragments.BobaFragment;
+import com.dao.ratemyboba.fragments.HomeFragment;
+import com.dao.ratemyboba.models.Tea;
+import com.dao.ratemyboba.util.UserLocationListener;
 import com.facebook.login.LoginManager;
 import com.firebase.client.AuthData;
 import com.firebase.client.Firebase;
@@ -250,6 +248,6 @@ public class MainActivity extends AppCompatActivity implements
      */
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
+//        super.onBackPressed();
     }
 }

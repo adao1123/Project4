@@ -1,4 +1,4 @@
-package com.example.ratemyboba.fragments;
+package com.dao.ratemyboba.fragments;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -27,12 +27,12 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.ratemyboba.R;
-import com.example.ratemyboba.activities.ShopActivity;
-import com.example.ratemyboba.adapters.TeaAdapter;
-import com.example.ratemyboba.adapters.TeaShopAdapter;
-import com.example.ratemyboba.models.Tea;
-import com.example.ratemyboba.util.RV_Space_Decoration;
+import com.dao.ratemyboba.R;
+import com.dao.ratemyboba.activities.ShopActivity;
+import com.dao.ratemyboba.adapters.TeaAdapter;
+import com.dao.ratemyboba.adapters.TeaShopAdapter;
+import com.dao.ratemyboba.models.Tea;
+import com.dao.ratemyboba.util.RV_Space_Decoration;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.jaredrummler.materialspinner.MaterialSpinner;

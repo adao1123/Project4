@@ -1,4 +1,4 @@
-package com.example.ratemyboba;
+package com.dao.ratemyboba;
 
 import android.app.Application;
 

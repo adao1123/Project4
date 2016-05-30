@@ -1,16 +1,15 @@
-package com.example.ratemyboba.adapters;
+package com.dao.ratemyboba.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.ratemyboba.R;
-import com.example.ratemyboba.models.Tea;
+import com.dao.ratemyboba.R;
+import com.dao.ratemyboba.models.Tea;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

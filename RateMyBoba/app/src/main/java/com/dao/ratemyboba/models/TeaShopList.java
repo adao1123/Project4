@@ -1,4 +1,4 @@
-package com.example.ratemyboba.models;
+package com.dao.ratemyboba.models;
 
 import com.google.gson.annotations.SerializedName;
 

@@ -1,11 +1,18 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'adao1193'
+            keyPassword 'thien112393'
+            storeFile file('C:/Users/adao1/Desktop/RateMyBobaRelease/keystore.jks')
+            storePassword 'thien112393'
+        }
+    }
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
-
     defaultConfig {
-        applicationId "com.example.ratemyboba"
+        applicationId "com.dao.ratemyboba"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
@@ -35,9 +42,7 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-
     compile 'com.android.support:appcompat-v7:23.0.+'
-
     compile 'com.android.support:recyclerview-v7:23.0.+'
     compile 'com.yelp.clientlib:yelp-android:2.0.0'
     compile 'com.squareup.retrofit2:retrofit:2.0.1'
@@ -50,5 +55,4 @@ dependencies {
     compile 'com.github.francescocervone:OpenRatingView:1.0.1'
     compile 'com.firebaseui:firebase-ui:0.3.1'
     compile 'com.jaredrummler:material-spinner:1.0.9'
-
 }

@@ -1,4 +1,4 @@
-package com.example.ratemyboba.adapters;
+package com.dao.ratemyboba.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -9,15 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.ratemyboba.R;
-import com.example.ratemyboba.fragments.HomeFragment;
-import com.example.ratemyboba.models.Tea;
-import com.example.ratemyboba.models.TeaShop;
-import com.example.ratemyboba.models.TeaShopList;
+import com.dao.ratemyboba.R;
 import com.squareup.picasso.Picasso;
 import com.yelp.clientlib.entities.Business;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 

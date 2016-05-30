@@ -1,4 +1,4 @@
-package com.example.ratemyboba.fragments;
+package com.dao.ratemyboba.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -11,17 +11,14 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.example.ratemyboba.R;
-import com.example.ratemyboba.models.Tea;
-import com.example.ratemyboba.util.OnSwipeTouchListener;
+import com.dao.ratemyboba.R;
+import com.dao.ratemyboba.models.Tea;
+import com.dao.ratemyboba.util.OnSwipeTouchListener;
 import com.yelp.clientlib.connection.YelpAPI;
 import com.yelp.clientlib.connection.YelpAPIFactory;
 import com.yelp.clientlib.entities.Business;
 import com.yelp.clientlib.entities.SearchResponse;
 
-import org.w3c.dom.Text;
-
-import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

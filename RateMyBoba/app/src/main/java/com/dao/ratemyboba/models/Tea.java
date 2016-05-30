@@ -1,4 +1,4 @@
-package com.example.ratemyboba.models;
+package com.dao.ratemyboba.models;
 
 /**
  * Created by adao1 on 5/2/2016.

@@ -1,4 +1,4 @@
-package com.example.ratemyboba.activities;
+package com.dao.ratemyboba.activities;
 
 import android.Manifest;
 import android.app.Activity;
@@ -27,14 +27,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.ratemyboba.R;
-import com.example.ratemyboba.adapters.TeaAdapter;
-import com.example.ratemyboba.fragments.HomeFragment;
-import com.example.ratemyboba.models.Review;
-import com.example.ratemyboba.models.Tea;
-import com.example.ratemyboba.util.RV_Space_Decoration;
-import com.example.ratemyboba.view_holders.BobaViewHolder;
-import com.example.ratemyboba.view_holders.ReviewsViewHolder;
+import com.dao.ratemyboba.R;
+import com.dao.ratemyboba.adapters.TeaAdapter;
+import com.dao.ratemyboba.fragments.HomeFragment;
+import com.dao.ratemyboba.models.Review;
+import com.dao.ratemyboba.models.Tea;
+import com.dao.ratemyboba.util.RV_Space_Decoration;
+import com.dao.ratemyboba.view_holders.BobaViewHolder;
+import com.dao.ratemyboba.view_holders.ReviewsViewHolder;
 import com.firebase.client.AuthData;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -394,7 +394,7 @@ public class ShopActivity extends AppCompatActivity implements TeaAdapter.OnTeaC
     private void setTeaRVImages(Tea tea,ImageView imageView){
         if (!tea.getImageUrl().contains("http")){
             byte[] imageAsBytes = Base64.decode(tea.getImageUrl().getBytes(), Base64.DEFAULT);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes,0,imageAsBytes.length);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
             Bitmap rotatedBitmap = RotateBitmap(bitmap,90);
             imageView.setImageBitmap(Bitmap.createScaledBitmap(rotatedBitmap,750,1000,false));
         }else {

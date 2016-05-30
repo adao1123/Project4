@@ -1,4 +1,4 @@
-package com.example.ratemyboba.util;
+package com.dao.ratemyboba.util;
 
 /**
  * Created by adao1 on 5/2/2016.

@@ -1,4 +1,4 @@
-package com.example.ratemyboba.util;
+package com.dao.ratemyboba.util;
 
 import android.content.Context;
 import android.content.res.TypedArray;

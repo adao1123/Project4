@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ratemyboba">
+    package="com.dao.ratemyboba" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -13,29 +13,34 @@
     <permission android:name="MY_PERMISSION_ACCESS_COURSE_LOCATION" />
 
     <application
-        android:name=".RateMyBobaApplication"
+        android:name="com.dao.ratemyboba.RateMyBobaApplication"
         android:allowBackup="true"
         android:icon="@drawable/bobaicon"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme" >
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
-        <activity android:name=".activities.MainActivity" android:screenOrientation="userPortrait"/>
-        <activity android:name=".activities.ShopActivity" android:screenOrientation="userPortrait"/>
+        <activity
+            android:name="com.dao.ratemyboba.activities.MainActivity"
+            android:screenOrientation="userPortrait" />
+        <activity
+            android:name="com.dao.ratemyboba.activities.ShopActivity"
+            android:screenOrientation="userPortrait" />
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name"
             android:screenOrientation="userPortrait"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity android:name=".activities.FacebookActivity">
-
+        <activity android:name="com.dao.ratemyboba.activities.FacebookActivity" >
         </activity>
-        <activity android:name=".activities.SplashActivity" android:screenOrientation="userPortrait"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+        <activity
+            android:name="com.dao.ratemyboba.activities.SplashActivity"
+            android:screenOrientation="userPortrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
